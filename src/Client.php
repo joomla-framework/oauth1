@@ -556,15 +556,16 @@ abstract class Client
 	/**
 	 * Get an option from the OAuth1 Client instance.
 	 *
-	 * @param   string  $key  The name of the option to get
+	 * @param   string  $key      The name of the option to get
+	 * @param   mixed   $default  Optional default value if the option does not exist
 	 *
 	 * @return  mixed  The option value
 	 *
 	 * @since   1.0
 	 */
-	public function getOption($key)
+	public function getOption($key, $default = null)
 	{
-		return isset($this->options[$key]) ? $this->options[$key] : null;
+		return isset($this->options[$key]) ? $this->options[$key] : $default;
 	}
 
 	/**

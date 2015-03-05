@@ -252,7 +252,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->with($this->object->getOption('requestTokenURL'))
 			->will($this->returnValue($returnData));
 
-		TestHelper::invoke($this->object, '_generateRequestToken');
+		TestHelper::invoke($this->object, 'generateRequestToken');
 	}
 
 	/**

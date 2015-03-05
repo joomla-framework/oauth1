@@ -125,10 +125,10 @@ abstract class Client
 		if (empty($verifier))
 		{
 			// Generate a request token.
-			$this->_generateRequestToken();
+			$this->generateRequestToken();
 
 			// Authenticate the user and authorise the app.
-			$this->_authorise();
+			$this->authorise();
 		}
 
 		// Callback
@@ -155,7 +155,7 @@ abstract class Client
 			}
 
 			// Generate access token.
-			$this->_generateAccessToken();
+			$this->generateAccessToken();
 
 			// Return the access token.
 			return $this->token;
@@ -170,7 +170,7 @@ abstract class Client
 	 * @since   1.0
 	 * @throws  \DomainException
 	 */
-	private function _generateRequestToken()
+	private function generateRequestToken()
 	{
 		// Set the callback URL.
 		if ($this->getOption('callback'))
@@ -210,7 +210,7 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	private function _authorise()
+	private function authorise()
 	{
 		$url = $this->getOption('authoriseURL') . '?oauth_token=' . $this->token['key'];
 
@@ -233,7 +233,7 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	private function _generateAccessToken()
+	private function generateAccessToken()
 	{
 		// Set the parameters.
 		$parameters = array(
@@ -293,7 +293,7 @@ abstract class Client
 		}
 
 		// Sign the request.
-		$oauth_headers = $this->_signRequest($url, $method, $oauth_headers);
+		$oauth_headers = $this->signRequest($url, $method, $oauth_headers);
 
 		// Get parameters for the Authorisation header.
 		if (is_array($data))
@@ -306,18 +306,18 @@ abstract class Client
 		{
 			case 'GET':
 				$url = $this->toUrl($url, $data);
-				$response = $this->client->get($url, array('Authorization' => $this->_createHeader($oauth_headers)));
+				$response = $this->client->get($url, array('Authorization' => $this->createHeader($oauth_headers)));
 				break;
 			case 'POST':
-				$headers = array_merge($headers, array('Authorization' => $this->_createHeader($oauth_headers)));
+				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
 				$response = $this->client->post($url, $data, $headers);
 				break;
 			case 'PUT':
-				$headers = array_merge($headers, array('Authorization' => $this->_createHeader($oauth_headers)));
+				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
 				$response = $this->client->put($url, $data, $headers);
 				break;
 			case 'DELETE':
-				$headers = array_merge($headers, array('Authorization' => $this->_createHeader($oauth_headers)));
+				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
 				$response = $this->client->delete($url, $headers);
 				break;
 		}
@@ -350,7 +350,7 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	private function _createHeader($parameters)
+	private function createHeader($parameters)
 	{
 		$header = 'OAuth ';
 
@@ -429,14 +429,14 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	private function _signRequest($url, $method, $parameters)
+	private function signRequest($url, $method, $parameters)
 	{
 		// Create the signature base string.
-		$base = $this->_baseString($url, $method, $parameters);
+		$base = $this->baseString($url, $method, $parameters);
 
 		$parameters['oauth_signature'] = $this->safeEncode(
 			base64_encode(
-				hash_hmac('sha1', $base, $this->_prepareSigningKey(), true)
+				hash_hmac('sha1', $base, $this->prepareSigningKey(), true)
 				)
 			);
 
@@ -454,7 +454,7 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	private function _baseString($url, $method, $parameters)
+	private function baseString($url, $method, $parameters)
 	{
 		// Sort the parameters alphabetically
 		uksort($parameters, 'strcmp');
@@ -546,7 +546,7 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	private function _prepareSigningKey()
+	private function prepareSigningKey()
 	{
 		return $this->safeEncode($this->getOption('consumer_secret')) . '&' . $this->safeEncode(($this->token) ? $this->token['secret'] : '');
 	}

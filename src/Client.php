@@ -106,10 +106,8 @@ abstract class Client
 			{
 				return $this->token;
 			}
-			else
-			{
-				$this->token = null;
-			}
+
+			$this->token = null;
 		}
 
 		// Check for callback.
@@ -122,17 +120,7 @@ abstract class Client
 			$verifier = $this->input->get('oauth_token');
 		}
 
-		if (empty($verifier))
-		{
-			// Generate a request token.
-			$this->generateRequestToken();
-
-			// Authenticate the user and authorise the app.
-			$this->authorise();
-		}
-
-		// Callback
-		else
+		if (!empty($verifier))
 		{
 			$session = $this->application->getSession();
 
@@ -160,6 +148,12 @@ abstract class Client
 			// Return the access token.
 			return $this->token;
 		}
+
+		// Generate a request token.
+		$this->generateRequestToken();
+
+		// Authenticate the user and authorise the app.
+		$this->authorise();
 	}
 
 	/**
@@ -172,16 +166,12 @@ abstract class Client
 	 */
 	private function generateRequestToken()
 	{
+		$parameters = array();
+
 		// Set the callback URL.
 		if ($this->getOption('callback'))
 		{
-			$parameters = array(
-				'oauth_callback' => $this->getOption('callback')
-			);
-		}
-		else
-		{
-			$parameters = array();
+			$parameters['oauth_callback'] = $this->getOption('callback');
 		}
 
 		// Make an OAuth request for the Request Token.
@@ -308,14 +298,13 @@ abstract class Client
 				$url = $this->toUrl($url, $data);
 				$response = $this->client->get($url, array('Authorization' => $this->createHeader($oauth_headers)));
 				break;
+
 			case 'POST':
-				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
-				$response = $this->client->post($url, $data, $headers);
-				break;
 			case 'PUT':
 				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
-				$response = $this->client->put($url, $data, $headers);
+				$response = $this->client->{strtolower($method)}($url, $data, $headers);
 				break;
+
 			case 'DELETE':
 				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
 				$response = $this->client->delete($url, $headers);
@@ -389,12 +378,14 @@ abstract class Client
 				{
 					if (strpos($url, '?') === false)
 					{
-						$url .= '?' . $key . '=' . $v;
+						$url .= '?';
 					}
 					else
 					{
-						$url .= '&' . $key . '=' . $v;
+						$url .= '&';
 					}
+
+					$url .= $key . '=' . $v;
 				}
 			}
 			else
@@ -406,12 +397,14 @@ abstract class Client
 
 				if (strpos($url, '?') === false)
 				{
-					$url .= '?' . $key . '=' . $value;
+					$url .= '?';
 				}
 				else
 				{
-					$url .= '&' . $key . '=' . $value;
+					$url .= '&';
 				}
+
+				$url .= $key . '=' . $v;
 			}
 		}
 
@@ -509,18 +502,17 @@ abstract class Client
 		{
 			return array_map(array($this, 'safeEncode'), $data);
 		}
-		elseif (is_scalar($data))
+
+		if (is_scalar($data))
 		{
 			return str_ireplace(
 				array('+', '%7E'),
 				array(' ', '~'),
 				rawurlencode($data)
-				);
+			);
 		}
-		else
-		{
-			return '';
-		}
+
+		return '';
 	}
 
 	/**

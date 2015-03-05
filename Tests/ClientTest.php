@@ -87,15 +87,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$this->input = new Input;
 		$this->application = new WebInspector;
 
-
-
 		$mockSession = $this->getMock('Joomla\\Session\\Session');
 
 		$this->application->setSession($mockSession);
 
 		$this->options->set('consumer_key', $key);
 		$this->options->set('consumer_secret', $secret);
-		$this->object = new ClientInspector($this->options, $this->client, $this->input, $this->application);
+		$this->object = new ClientInspector($this->application, $this->client, $this->input, $this->options);
 	}
 
 	/**

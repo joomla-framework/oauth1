@@ -20,69 +20,80 @@ use Joomla\Application\AbstractWebApplication;
 abstract class Client
 {
 	/**
-	 * @var    array  Options for the Client object.
+	 * Options for the Client object.
+	 *
+	 * @var    array
 	 * @since  1.0
 	 */
 	protected $options;
 
 	/**
-	 * @var    array  Contains access token key, secret and verifier.
+	 * Contains access token key, secret and verifier.
+	 *
+	 * @var    array
 	 * @since  1.0
 	 */
 	protected $token = array();
 
 	/**
-	 * @var    Http  The HTTP client object to use in sending HTTP requests.
+	 * The HTTP client object to use in sending HTTP requests.
+	 *
+	 * @var    Http
 	 * @since  1.0
 	 */
 	protected $client;
 
 	/**
-	 * @var    Input The input object to use in retrieving GET/POST data.
+	 * The input object to use in retrieving GET/POST data.
+	 *
+	 * @var    Input
 	 * @since  1.0
 	 */
 	protected $input;
 
 	/**
-	 * @var   AbstractWebApplication  The application object to send HTTP headers for redirects.
-	 * @since 1.0
+	 * The application object to send HTTP headers for redirects.
+	 *
+	 * @var    AbstractWebApplication
+	 * @since  1.0
 	 */
 	protected $application;
 
 	/**
-	 * @var   string  Selects which version of OAuth to use: 1.0 or 1.0a.
-	 * @since 1.0
+	 * Selects which version of OAuth to use: 1.0 or 1.0a.
+	 *
+	 * @var    string
+	 * @since  1.0
 	 */
 	protected $version;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param   array                   $options      OAuth1 Client options array.
+	 * @param   AbstractWebApplication  $application  The application object
 	 * @param   Http                    $client       The HTTP client object.
 	 * @param   Input                   $input        The input object
-	 * @param   AbstractWebApplication  $application  The application object
+	 * @param   array                   $options      OAuth1 Client options array.
 	 * @param   string                  $version      Specify the OAuth version. By default we are using 1.0a.
 	 *
-	 * @since 1.0
+	 * @since   1.0
 	 */
-	public function __construct($options = array(), Http $client, Input $input, AbstractWebApplication $application, $version = '1.0a')
+	public function __construct(AbstractWebApplication $application, Http $client, Input $input = null, $options = array(), $version = '1.0a')
 	{
-		$this->options = $options;
-		$this->client = $client;
-		$this->input = $input;
 		$this->application = $application;
+		$this->client = $client;
+		$this->input = $input instanceof Input ? $input : $application->input;
+		$this->options = $options;
 		$this->version = $version;
 	}
 
 	/**
 	 * Method to form the oauth flow.
 	 *
-	 * @return string  The access token.
+	 * @return  string  The access token.
 	 *
-	 * @since  1.0
-	 *
-	 * @throws \DomainException
+	 * @since   1.0
+	 * @throws  \DomainException
 	 */
 	public function authenticate()
 	{
@@ -126,7 +137,10 @@ abstract class Client
 			$session = $this->application->getSession();
 
 			// Get token form session.
-			$this->token = array('key' => $session->get('key', null, 'oauth_token'), 'secret' => $session->get('secret', null, 'oauth_token'));
+			$this->token = array(
+				'key' => $session->get('key', null, 'oauth_token'),
+				'secret' => $session->get('secret', null, 'oauth_token')
+			);
 
 			// Verify the returned request token.
 			if (strcmp($this->token['key'], $this->input->get('oauth_token')) !== 0)
@@ -151,7 +165,7 @@ abstract class Client
 	/**
 	 * Method used to get a request token.
 	 *
-	 * @return void
+	 * @return  void
 	 *
 	 * @since   1.0
 	 * @throws  \DomainException
@@ -192,9 +206,9 @@ abstract class Client
 	/**
 	 * Method used to authorise the application.
 	 *
-	 * @return void
+	 * @return  void
 	 *
-	 * @since  1.0
+	 * @since   1.0
 	 */
 	private function _authorise()
 	{
@@ -215,9 +229,9 @@ abstract class Client
 	/**
 	 * Method used to get an access token.
 	 *
-	 * @return void
+	 * @return  void
 	 *
-	 * @since  1.0
+	 * @since   1.0
 	 */
 	private function _generateAccessToken()
 	{
@@ -249,7 +263,7 @@ abstract class Client
 	 * @param   mixed   $data        The POST request data.
 	 * @param   array   $headers     An array of name-value pairs to include in the header of the request
 	 *
-	 * @return  object  The Response object.
+	 * @return  \Joomla\Http\Response
 	 *
 	 * @since   1.0
 	 * @throws  \DomainException
@@ -514,7 +528,7 @@ abstract class Client
 	 *
 	 * @return  string  The current nonce.
 	 *
-	 * @since 1.0
+	 * @since   1.0
 	 */
 	public static function generateNonce()
 	{
@@ -528,9 +542,9 @@ abstract class Client
 	/**
 	 * Prepares the OAuth signing key.
 	 *
-	 * @return string  The prepared signing key.
+	 * @return  string  The prepared signing key.
 	 *
-	 * @since 1.0
+	 * @since   1.0
 	 */
 	private function _prepareSigningKey()
 	{

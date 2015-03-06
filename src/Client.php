@@ -20,69 +20,80 @@ use Joomla\Application\AbstractWebApplication;
 abstract class Client
 {
 	/**
-	 * @var    array  Options for the Client object.
+	 * Options for the Client object.
+	 *
+	 * @var    array
 	 * @since  1.0
 	 */
 	protected $options;
 
 	/**
-	 * @var    array  Contains access token key, secret and verifier.
+	 * Contains access token key, secret and verifier.
+	 *
+	 * @var    array
 	 * @since  1.0
 	 */
 	protected $token = array();
 
 	/**
-	 * @var    Http  The HTTP client object to use in sending HTTP requests.
+	 * The HTTP client object to use in sending HTTP requests.
+	 *
+	 * @var    Http
 	 * @since  1.0
 	 */
 	protected $client;
 
 	/**
-	 * @var    Input The input object to use in retrieving GET/POST data.
+	 * The input object to use in retrieving GET/POST data.
+	 *
+	 * @var    Input
 	 * @since  1.0
 	 */
 	protected $input;
 
 	/**
-	 * @var   AbstractWebApplication  The application object to send HTTP headers for redirects.
-	 * @since 1.0
+	 * The application object to send HTTP headers for redirects.
+	 *
+	 * @var    AbstractWebApplication
+	 * @since  1.0
 	 */
 	protected $application;
 
 	/**
-	 * @var   string  Selects which version of OAuth to use: 1.0 or 1.0a.
-	 * @since 1.0
+	 * Selects which version of OAuth to use: 1.0 or 1.0a.
+	 *
+	 * @var    string
+	 * @since  1.0
 	 */
 	protected $version;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param   array                   $options      OAuth1 Client options array.
+	 * @param   AbstractWebApplication  $application  The application object
 	 * @param   Http                    $client       The HTTP client object.
 	 * @param   Input                   $input        The input object
-	 * @param   AbstractWebApplication  $application  The application object
+	 * @param   array                   $options      OAuth1 Client options array.
 	 * @param   string                  $version      Specify the OAuth version. By default we are using 1.0a.
 	 *
-	 * @since 1.0
+	 * @since   1.0
 	 */
-	public function __construct($options = array(), Http $client, Input $input, AbstractWebApplication $application, $version = '1.0a')
+	public function __construct(AbstractWebApplication $application, Http $client, Input $input = null, $options = array(), $version = '1.0a')
 	{
-		$this->options = $options;
-		$this->client = $client;
-		$this->input = $input;
 		$this->application = $application;
+		$this->client = $client;
+		$this->input = $input instanceof Input ? $input : $application->input;
+		$this->options = $options;
 		$this->version = $version;
 	}
 
 	/**
 	 * Method to form the oauth flow.
 	 *
-	 * @return string  The access token.
+	 * @return  string  The access token.
 	 *
-	 * @since  1.0
-	 *
-	 * @throws \DomainException
+	 * @since   1.0
+	 * @throws  \DomainException
 	 */
 	public function authenticate()
 	{
@@ -95,10 +106,8 @@ abstract class Client
 			{
 				return $this->token;
 			}
-			else
-			{
-				$this->token = null;
-			}
+
+			$this->token = null;
 		}
 
 		// Check for callback.
@@ -111,22 +120,15 @@ abstract class Client
 			$verifier = $this->input->get('oauth_token');
 		}
 
-		if (empty($verifier))
-		{
-			// Generate a request token.
-			$this->_generateRequestToken();
-
-			// Authenticate the user and authorise the app.
-			$this->_authorise();
-		}
-
-		// Callback
-		else
+		if (!empty($verifier))
 		{
 			$session = $this->application->getSession();
 
 			// Get token form session.
-			$this->token = array('key' => $session->get('key', null, 'oauth_token'), 'secret' => $session->get('secret', null, 'oauth_token'));
+			$this->token = array(
+				'key' => $session->get('key', null, 'oauth_token'),
+				'secret' => $session->get('secret', null, 'oauth_token')
+			);
 
 			// Verify the returned request token.
 			if (strcmp($this->token['key'], $this->input->get('oauth_token')) !== 0)
@@ -141,33 +143,35 @@ abstract class Client
 			}
 
 			// Generate access token.
-			$this->_generateAccessToken();
+			$this->generateAccessToken();
 
 			// Return the access token.
 			return $this->token;
 		}
+
+		// Generate a request token.
+		$this->generateRequestToken();
+
+		// Authenticate the user and authorise the app.
+		$this->authorise();
 	}
 
 	/**
 	 * Method used to get a request token.
 	 *
-	 * @return void
+	 * @return  void
 	 *
 	 * @since   1.0
 	 * @throws  \DomainException
 	 */
-	private function _generateRequestToken()
+	private function generateRequestToken()
 	{
+		$parameters = array();
+
 		// Set the callback URL.
 		if ($this->getOption('callback'))
 		{
-			$parameters = array(
-				'oauth_callback' => $this->getOption('callback')
-			);
-		}
-		else
-		{
-			$parameters = array();
+			$parameters['oauth_callback'] = $this->getOption('callback');
 		}
 
 		// Make an OAuth request for the Request Token.
@@ -192,11 +196,11 @@ abstract class Client
 	/**
 	 * Method used to authorise the application.
 	 *
-	 * @return void
+	 * @return  void
 	 *
-	 * @since  1.0
+	 * @since   1.0
 	 */
-	private function _authorise()
+	private function authorise()
 	{
 		$url = $this->getOption('authoriseURL') . '?oauth_token=' . $this->token['key'];
 
@@ -215,11 +219,11 @@ abstract class Client
 	/**
 	 * Method used to get an access token.
 	 *
-	 * @return void
+	 * @return  void
 	 *
-	 * @since  1.0
+	 * @since   1.0
 	 */
-	private function _generateAccessToken()
+	private function generateAccessToken()
 	{
 		// Set the parameters.
 		$parameters = array(
@@ -249,7 +253,7 @@ abstract class Client
 	 * @param   mixed   $data        The POST request data.
 	 * @param   array   $headers     An array of name-value pairs to include in the header of the request
 	 *
-	 * @return  object  The Response object.
+	 * @return  \Joomla\Http\Response
 	 *
 	 * @since   1.0
 	 * @throws  \DomainException
@@ -279,7 +283,7 @@ abstract class Client
 		}
 
 		// Sign the request.
-		$oauth_headers = $this->_signRequest($url, $method, $oauth_headers);
+		$oauth_headers = $this->signRequest($url, $method, $oauth_headers);
 
 		// Get parameters for the Authorisation header.
 		if (is_array($data))
@@ -292,18 +296,17 @@ abstract class Client
 		{
 			case 'GET':
 				$url = $this->toUrl($url, $data);
-				$response = $this->client->get($url, array('Authorization' => $this->_createHeader($oauth_headers)));
+				$response = $this->client->get($url, array('Authorization' => $this->createHeader($oauth_headers)));
 				break;
+
 			case 'POST':
-				$headers = array_merge($headers, array('Authorization' => $this->_createHeader($oauth_headers)));
-				$response = $this->client->post($url, $data, $headers);
-				break;
 			case 'PUT':
-				$headers = array_merge($headers, array('Authorization' => $this->_createHeader($oauth_headers)));
-				$response = $this->client->put($url, $data, $headers);
+				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
+				$response = $this->client->{strtolower($method)}($url, $data, $headers);
 				break;
+
 			case 'DELETE':
-				$headers = array_merge($headers, array('Authorization' => $this->_createHeader($oauth_headers)));
+				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
 				$response = $this->client->delete($url, $headers);
 				break;
 		}
@@ -336,7 +339,7 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	private function _createHeader($parameters)
+	private function createHeader($parameters)
 	{
 		$header = 'OAuth ';
 
@@ -375,12 +378,14 @@ abstract class Client
 				{
 					if (strpos($url, '?') === false)
 					{
-						$url .= '?' . $key . '=' . $v;
+						$url .= '?';
 					}
 					else
 					{
-						$url .= '&' . $key . '=' . $v;
+						$url .= '&';
 					}
+
+					$url .= $key . '=' . $v;
 				}
 			}
 			else
@@ -392,12 +397,14 @@ abstract class Client
 
 				if (strpos($url, '?') === false)
 				{
-					$url .= '?' . $key . '=' . $value;
+					$url .= '?';
 				}
 				else
 				{
-					$url .= '&' . $key . '=' . $value;
+					$url .= '&';
 				}
+
+				$url .= $key . '=' . $v;
 			}
 		}
 
@@ -415,14 +422,14 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	private function _signRequest($url, $method, $parameters)
+	private function signRequest($url, $method, $parameters)
 	{
 		// Create the signature base string.
-		$base = $this->_baseString($url, $method, $parameters);
+		$base = $this->baseString($url, $method, $parameters);
 
 		$parameters['oauth_signature'] = $this->safeEncode(
 			base64_encode(
-				hash_hmac('sha1', $base, $this->_prepareSigningKey(), true)
+				hash_hmac('sha1', $base, $this->prepareSigningKey(), true)
 				)
 			);
 
@@ -440,7 +447,7 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	private function _baseString($url, $method, $parameters)
+	private function baseString($url, $method, $parameters)
 	{
 		// Sort the parameters alphabetically
 		uksort($parameters, 'strcmp');
@@ -495,18 +502,17 @@ abstract class Client
 		{
 			return array_map(array($this, 'safeEncode'), $data);
 		}
-		elseif (is_scalar($data))
+
+		if (is_scalar($data))
 		{
 			return str_ireplace(
 				array('+', '%7E'),
 				array(' ', '~'),
 				rawurlencode($data)
-				);
+			);
 		}
-		else
-		{
-			return '';
-		}
+
+		return '';
 	}
 
 	/**
@@ -514,7 +520,7 @@ abstract class Client
 	 *
 	 * @return  string  The current nonce.
 	 *
-	 * @since 1.0
+	 * @since   1.0
 	 */
 	public static function generateNonce()
 	{
@@ -528,11 +534,11 @@ abstract class Client
 	/**
 	 * Prepares the OAuth signing key.
 	 *
-	 * @return string  The prepared signing key.
+	 * @return  string  The prepared signing key.
 	 *
-	 * @since 1.0
+	 * @since   1.0
 	 */
-	private function _prepareSigningKey()
+	private function prepareSigningKey()
 	{
 		return $this->safeEncode($this->getOption('consumer_secret')) . '&' . $this->safeEncode(($this->token) ? $this->token['secret'] : '');
 	}
@@ -550,15 +556,16 @@ abstract class Client
 	/**
 	 * Get an option from the OAuth1 Client instance.
 	 *
-	 * @param   string  $key  The name of the option to get
+	 * @param   string  $key      The name of the option to get
+	 * @param   mixed   $default  Optional default value if the option does not exist
 	 *
 	 * @return  mixed  The option value
 	 *
 	 * @since   1.0
 	 */
-	public function getOption($key)
+	public function getOption($key, $default = null)
 	{
-		return isset($this->options[$key]) ? $this->options[$key] : null;
+		return isset($this->options[$key]) ? $this->options[$key] : $default;
 	}
 
 	/**

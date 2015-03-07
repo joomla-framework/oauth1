@@ -7,61 +7,63 @@
 namespace Joomla\OAuth1\Tests;
 
 use Joomla\OAuth1\Client;
+use Joomla\OAuth1\Tests\Stub\TestClient;
 use Joomla\Registry\Registry;
 use Joomla\Input\Input;
 use Joomla\Test\WebInspector;
 use Joomla\Test\TestHelper;
 
-require_once __DIR__ . '/stubs/ClientInspector.php';
-
-
 /**
- * Test class for OAuth1 Client.
- *
- * @since  1.0
+ * Test class for \Joomla\OAuth1\Client.
  */
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
 	/**
-	 * @var    Input  input for the Client object.
-	 * @since  1.0
+	 * Input object for the Client object.
+	 *
+	 * @var  Input
 	 */
 	protected $input;
 
 	/**
-	 * @var    Registry  Options for the Client object.
-	 * @since  1.0
+	 * Options for the Client object.
+	 *
+	 * @var  Registry
 	 */
 	protected $options;
 
 	/**
-	 * @var    object  Mock http object.
-	 * @since  1.0
+	 * Mock HTTP object.
+	 *
+	 * @var  \Joomla\Http\Http
 	 */
 	protected $client;
 
 	/**
 	 * An instance of the object to test.
 	 *
-	 * @var    ClientInspector
-	 * @since  1.0
+	 * @var  ClientInspector
 	 */
 	protected $object;
 
 	/**
-	 * @var   \Joomla\Application\AbstractWebApplication  The application object to send HTTP headers for redirects.
+	 * The application object to send HTTP headers for redirects.
+	 *
+	 * @var  \Joomla\Application\AbstractWebApplication
 	 */
 	protected $application;
 
 	/**
-	 * @var    string  Sample JSON string.
-	 * @since  1.0
+	 * Sample JSON string.
+	 *
+	 * @var  string
 	 */
 	protected $sampleString = '{"a":1,"b":2,"c":3,"d":4,"e":5}';
 
 	/**
-	 * @var    string  Sample JSON error message.
-	 * @since  1.0
+	 * Sample JSON error message.
+	 *
+	 * @var  string
 	 */
 	protected $errorString = '{"errorCode":401, "message": "Generic error"}';
 
@@ -69,7 +71,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 * Sets up the fixture, for example, opens a network connection.
 	 * This method is called before a test is executed.
 	 *
-	 * @return void
+	 * @return  void
 	 */
 	protected function setUp()
 	{
@@ -78,13 +80,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$_SERVER['REQUEST_URI'] = '/index.php';
 		$_SERVER['SCRIPT_NAME'] = '/index.php';
 
-		$key = "TEST_KEY";
-		$secret = "TEST_SECRET";
-		$my_url = "TEST_URL";
+		$key    = 'TEST_KEY';
+		$secret = 'TEST_SECRET';
+		$my_url = 'TEST_URL';
 
-		$this->options = new Registry;
-		$this->client = $this->getMock('Joomla\\Http\\Http', array('get', 'post', 'delete', 'put'));
-		$this->input = new Input;
+		$this->options     = new Registry;
+		$this->client      = $this->getMock('Joomla\\Http\\Http', array('get', 'post', 'delete', 'put'));
+		$this->input       = new Input;
 		$this->application = new WebInspector;
 
 		$mockSession = $this->getMock('Joomla\\Session\\Session');
@@ -93,15 +95,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 		$this->options->set('consumer_key', $key);
 		$this->options->set('consumer_secret', $secret);
-		$this->object = new ClientInspector($this->application, $this->client, $this->input, $this->options);
+		$this->object = new TestClient($this->application, $this->client, $this->input, $this->options);
 	}
 
 	/**
 	 * Provides test data.
 	 *
-	 * @return array
-	 *
-	 * @since 1.0
+	 * @return  array
 	 */
 	public function seedAuthenticate()
 	{
@@ -111,19 +111,17 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			array(null, false, '1.0'),
 			array(null, false, '1.0a'),
 			array(null, true, '1.0a')
-			);
+		);
 	}
 
 	/**
 	 * Tests the constructor to ensure only arrays or ArrayAccess objects are allowed
 	 *
-	 * @return  void
-	 *
 	 * @expectedException  \InvalidArgumentException
 	 */
 	public function testConstructorDisallowsNonArrayObjects()
 	{
-		new ClientInspector($this->application, $this->client, $this->input, new \stdClass);
+		new TestClient($this->application, $this->client, $this->input, new \stdClass);
 	}
 
 	/**
@@ -133,10 +131,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 * @param   boolean  $fail     Mark if should fail or not.
 	 * @param   string   $version  Specify oauth version 1.0 or 1.0a.
 	 *
-	 * @return  void
-	 *
 	 * @dataProvider seedAuthenticate
-	 * @since   1.0
 	 */
 	public function testAuthenticate($token, $fail, $version)
 	{
@@ -161,7 +156,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			$this->client->expects($this->at(0))
 				->method('post')
 				->with($this->object->getOption('requestTokenURL'))
-				->will($this->returnValue($returnData));
+				->willReturn($returnData);
 
 			$input = TestHelper::getValue($this->object, 'input');
 			$input->set('oauth_verifier', null);
@@ -200,14 +195,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			if ($fail)
 			{
 				$mockSession->expects($this->at(0))
-							->method('get')
-							->with('key', null, 'oauth_token')
-							->will($this->returnValue('bad'));
+					->method('get')
+					->with('key', null, 'oauth_token')
+					->willReturn('bad');
 
 				$mockSession->expects($this->at(1))
-							->method('get')
-							->with('secret', null, 'oauth_token')
-							->will($this->returnValue('session'));
+					->method('get')
+					->with('secret', null, 'oauth_token')
+					->willReturn('session');
 
 				$this->application->setSession($mockSession);
 
@@ -216,14 +211,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			}
 
 			$mockSession->expects($this->at(0))
-						->method('get')
-						->with('key', null, 'oauth_token')
-						->will($this->returnValue('token'));
+				->method('get')
+				->with('key', null, 'oauth_token')
+				->will($this->returnValue('token'));
 
 			$mockSession->expects($this->at(1))
-						->method('get')
-						->with('secret', null, 'oauth_token')
-						->will($this->returnValue('secret'));
+				->method('get')
+				->with('secret', null, 'oauth_token')
+				->willReturn('secret');
 
 			$this->application->setSession($mockSession);
 
@@ -234,7 +229,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			$this->client->expects($this->at(0))
 				->method('post')
 				->with($this->object->getOption('accessTokenURL'))
-				->will($this->returnValue($returnData));
+				->willReturn($returnData);
 
 			$result = $this->object->authenticate();
 
@@ -246,9 +241,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * Tests the _generateRequestToken method - failure
 	 *
-	 * @return  void
-	 *
-	 * @since   1.0
 	 * @expectedException  \DomainException
 	 */
 	public function testGenerateRequestTokenFailure()
@@ -262,7 +254,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$this->client->expects($this->at(0))
 			->method('post')
 			->with($this->object->getOption('requestTokenURL'))
-			->will($this->returnValue($returnData));
+			->willReturn($returnData);
 
 		TestHelper::invoke($this->object, 'generateRequestToken');
 	}
@@ -270,9 +262,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/**
 	* Provides test data.
 	*
-	* @return array
-	*
-	* @since  1.0
+	* @return  array
 	*/
 	public function seedOauthRequest()
 	{
@@ -281,7 +271,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			array('GET'),
 			array('PUT'),
 			array('DELETE')
-			);
+		);
 	}
 
 	/**
@@ -290,9 +280,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 * @param   string  $method  The request method.
 	 *
 	 * @dataProvider seedOauthRequest
-	 * @return  void
-	 *
-	 * @since   1.0
 	 */
 	public function testOauthRequest($method)
 	{
@@ -306,12 +293,18 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			$this->client->expects($this->at(0))
 				->method($method, $data)
 				->with('www.example.com')
-				->will($this->returnValue($returnData));
+				->willReturn($returnData);
 
-			$this->assertThat(
-				$this->object->oauthRequest('www.example.com', $method, array('oauth_token' => '1235'), $data, array('Content-Type' => 'multipart/form-data')),
-				$this->equalTo($returnData)
-				);
+			$this->assertSame(
+				$returnData,
+				$this->object->oauthRequest(
+					'www.example.com',
+					$method,
+					array('oauth_token' => '1235'),
+					$data,
+					array('Content-Type' => 'multipart/form-data')
+				)
+			);
 		}
 		else
 		{
@@ -320,10 +313,16 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 				->with('www.example.com')
 				->will($this->returnValue($returnData));
 
-			$this->assertThat(
-				$this->object->oauthRequest('www.example.com', $method, array('oauth_token' => '1235'), array(), array('Content-Type' => 'multipart/form-data')),
-				$this->equalTo($returnData)
-				);
+			$this->assertSame(
+				$returnData,
+				$this->object->oauthRequest(
+					'www.example.com',
+					$method,
+					array('oauth_token' => '1235'),
+					array(),
+					array('Content-Type' => 'multipart/form-data')
+				)
+			);
 		}
 	}
 
@@ -331,14 +330,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 * Tests the safeEncode
 	 *
 	 * @return  void
-	 *
-	 * @since   1.0
 	 */
 	public function testSafeEncodeEmpty()
 	{
-		$this->assertThat(
-			$this->object->safeEncode(null),
-			$this->equalTo('')
-			);
+		$this->assertEmpty(
+			$this->object->safeEncode(null)
+		);
 	}
 }

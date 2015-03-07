@@ -4,23 +4,17 @@
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
-namespace Joomla\OAuth1\Tests;
+namespace Joomla\OAuth1\Tests\Stub;
 
 use Joomla\OAuth1\Client;
 
 /**
- * Inspector for the Client class.
- *
- * @since  1.0
+ * Stub client object for testing
  */
-class ClientInspector extends Client
+class TestClient extends Client
 {
 	/**
-	 * Mimic verifing credentials.
-	 *
-	 * @return void
-	 *
-	 * @since 1.0
+	 * {@inheritdoc}
 	 */
 	public function verifyCredentials()
 	{
@@ -33,21 +27,13 @@ class ClientInspector extends Client
 	}
 
 	/**
-	 * Method to validate a response.
-	 *
-	 * @param   string    $url       The request URL.
-	 * @param   Response  $response  The response to validate.
-	 *
-	 * @return  void
-	 *
-	 * @since   1.0
-	 * @throws  \DomainException
+	 * {@inheritdoc}
 	 */
 	public function validateResponse($url, $response)
 	{
 		if ($response->code < 200 || $response->code > 399)
 		{
-				throw new \DomainException($response->body);
+			throw new \DomainException($response->body);
 		}
 	}
 }

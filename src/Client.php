@@ -404,7 +404,7 @@ abstract class Client
 					$url .= '&';
 				}
 
-				$url .= $key . '=' . $v;
+				$url .= $key . '=' . $value;
 			}
 		}
 

@@ -213,7 +213,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			$mockSession->expects($this->at(0))
 				->method('get')
 				->with('key', null, 'oauth_token')
-				->will($this->returnValue('token'));
+				->willReturn('token');
 
 			$mockSession->expects($this->at(1))
 				->method('get')
@@ -311,7 +311,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			$this->client->expects($this->at(0))
 				->method($method)
 				->with('www.example.com')
-				->will($this->returnValue($returnData));
+				->willReturn($returnData);
 
 			$this->assertSame(
 				$returnData,

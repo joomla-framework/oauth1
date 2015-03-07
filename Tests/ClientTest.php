@@ -97,12 +97,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	* Provides test data.
-	*
-	* @return array
-	*
-	* @since 1.0
-	*/
+	 * Provides test data.
+	 *
+	 * @return array
+	 *
+	 * @since 1.0
+	 */
 	public function seedAuthenticate()
 	{
 		// Token, fail and oauth version.
@@ -112,6 +112,18 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			array(null, false, '1.0a'),
 			array(null, true, '1.0a')
 			);
+	}
+
+	/**
+	 * Tests the constructor to ensure only arrays or ArrayAccess objects are allowed
+	 *
+	 * @return  void
+	 *
+	 * @expectedException  \InvalidArgumentException
+	 */
+	public function testConstructorDisallowsNonArrayObjects()
+	{
+		new ClientInspector($this->application, $this->client, $this->input, new \stdClass);
 	}
 
 	/**

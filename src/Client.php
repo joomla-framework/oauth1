@@ -78,10 +78,10 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	public function __construct(AbstractWebApplication $application, Http $client, Input $input = null, $options = array(), $version = '1.0a')
+	public function __construct(AbstractWebApplication $application, Http $client = null, Input $input = null, $options = array(), $version = '1.0a')
 	{
 		$this->application = $application;
-		$this->client = $client;
+		$this->client = $client instanceof Http ? $client : HttpFactory::getHttp($options);
 		$this->input = $input instanceof Input ? $input : $application->input;
 		$this->options = $options;
 		$this->version = $version;

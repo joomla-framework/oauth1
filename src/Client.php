@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework OAuth1 Package
  *
- * @copyright  Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2015 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -78,7 +78,7 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	public function __construct(AbstractWebApplication $application, Http $client, Input $input = null, $options = array(), $version = '1.0a')
+	public function __construct(AbstractWebApplication $application, Http $client = null, Input $input = null, $options = array(), $version = '1.0a')
 	{
 		if (!is_array($options) && !($options instanceof \ArrayAccess))
 		{
@@ -88,7 +88,7 @@ abstract class Client
 		}
 
 		$this->application = $application;
-		$this->client = $client;
+		$this->client = $client instanceof Http ? $client : HttpFactory::getHttp($options);
 		$this->input = $input instanceof Input ? $input : $application->input;
 		$this->options = $options;
 		$this->version = $version;

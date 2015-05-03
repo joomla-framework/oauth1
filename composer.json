@@ -10,7 +10,8 @@
         "joomla/application": "2.0.*@dev",
         "joomla/http": "~1.0",
         "joomla/input": "~1.0",
-        "joomla/registry": "2.0.*@dev"
+        "joomla/registry": "2.0.*@dev",
+        "joomla/session": "~1.0"
     },
     "require-dev": {
         "joomla/test": "~1.0",

@@ -22,7 +22,7 @@ abstract class Client
 	/**
 	 * Options for the Client object.
 	 *
-	 * @var    array
+	 * @var    array|\ArrayAccess
 	 * @since  1.0
 	 */
 	protected $options;
@@ -73,13 +73,20 @@ abstract class Client
 	 * @param   AbstractWebApplication  $application  The application object
 	 * @param   Http                    $client       The HTTP client object.
 	 * @param   Input                   $input        The input object
-	 * @param   array                   $options      OAuth1 Client options array.
+	 * @param   array|\ArrayAccess      $options      OAuth1 Client options.
 	 * @param   string                  $version      Specify the OAuth version. By default we are using 1.0a.
 	 *
 	 * @since   1.0
 	 */
 	public function __construct(AbstractWebApplication $application, Http $client = null, Input $input = null, $options = array(), $version = '1.0a')
 	{
+		if (!is_array($options) && !($options instanceof \ArrayAccess))
+		{
+			throw new \InvalidArgumentException(
+				'The options param must be an array or implement the ArrayAccess interface.'
+			);
+		}
+
 		$this->application = $application;
 		$this->client = $client instanceof Http ? $client : HttpFactory::getHttp($options);
 		$this->input = $input instanceof Input ? $input : $application->input;

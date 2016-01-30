@@ -89,7 +89,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$this->input       = new Input;
 		$this->application = new WebInspector;
 
-		$mockSession = $this->getMock('Joomla\\Session\\Session');
+		$mockSession = $this->getMock('Joomla\\Session\\SessionInterface');
 
 		$this->application->setSession($mockSession);
 
@@ -190,7 +190,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			TestHelper::setValue($input, 'data', $data);
 
 			// Get mock session
-			$mockSession = $this->getMock('Joomla\\Session\\Session', array( '_start', 'get'));
+			$mockSession = $this->getMock('Joomla\\Session\\SessionInterface');
 
 			if ($fail)
 			{

@@ -196,12 +196,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			{
 				$mockSession->expects($this->at(0))
 					->method('get')
-					->with('key', null, 'oauth_token')
+					->with('oauth_token.key')
 					->willReturn('bad');
 
 				$mockSession->expects($this->at(1))
 					->method('get')
-					->with('secret', null, 'oauth_token')
+					->with('oauth_token.secret')
 					->willReturn('session');
 
 				$this->application->setSession($mockSession);
@@ -212,12 +212,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 			$mockSession->expects($this->at(0))
 				->method('get')
-				->with('key', null, 'oauth_token')
+				->with('oauth_token.key')
 				->willReturn('token');
 
 			$mockSession->expects($this->at(1))
 				->method('get')
-				->with('secret', null, 'oauth_token')
+				->with('oauth_token.secret')
 				->willReturn('secret');
 
 			$this->application->setSession($mockSession);

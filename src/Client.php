@@ -33,7 +33,7 @@ abstract class Client
 	 * @var    array
 	 * @since  1.0
 	 */
-	protected $token = array();
+	protected $token = [];
 
 	/**
 	 * The HTTP client object to use in sending HTTP requests.
@@ -78,7 +78,7 @@ abstract class Client
 	 *
 	 * @since   1.0
 	 */
-	public function __construct(AbstractWebApplication $application, Http $client = null, Input $input = null, $options = array(), $version = '1.0a')
+	public function __construct(AbstractWebApplication $application, Http $client = null, Input $input = null, $options = [], $version = '1.0a')
 	{
 		if (!is_array($options) && !($options instanceof \ArrayAccess))
 		{
@@ -88,10 +88,10 @@ abstract class Client
 		}
 
 		$this->application = $application;
-		$this->client = $client instanceof Http ? $client : HttpFactory::getHttp($options);
-		$this->input = $input instanceof Input ? $input : $application->input;
-		$this->options = $options;
-		$this->version = $version;
+		$this->client      = $client instanceof Http ? $client : HttpFactory::getHttp($options);
+		$this->input       = $input instanceof Input ? $input : $application->input;
+		$this->options     = $options;
+		$this->version     = $version;
 	}
 
 	/**
@@ -132,10 +132,10 @@ abstract class Client
 			$session = $this->application->getSession();
 
 			// Get token form session.
-			$this->token = array(
-				'key' => $session->get('key', null, 'oauth_token'),
-				'secret' => $session->get('secret', null, 'oauth_token')
-			);
+			$this->token = [
+				'key'    => $session->get('oauth_token.key'),
+				'secret' => $session->get('oauth_token.secret')
+			];
 
 			// Verify the returned request token.
 			if (strcmp($this->token['key'], $this->input->get('oauth_token')) !== 0)
@@ -173,7 +173,7 @@ abstract class Client
 	 */
 	private function generateRequestToken()
 	{
-		$parameters = array();
+		$parameters = [];
 
 		// Set the callback URL.
 		if ($this->getOption('callback'))
@@ -192,12 +192,12 @@ abstract class Client
 		}
 
 		// Save the request token.
-		$this->token = array('key' => $params['oauth_token'], 'secret' => $params['oauth_token_secret']);
+		$this->token = ['key' => $params['oauth_token'], 'secret' => $params['oauth_token_secret']];
 
 		// Save the request token in session
 		$session = $this->application->getSession();
-		$session->set('key', $this->token['key'], 'oauth_token');
-		$session->set('secret', $this->token['secret'], 'oauth_token');
+		$session->set('oauth_token.key', $this->token['key']);
+		$session->set('oauth_token.secret', $this->token['secret']);
 	}
 
 	/**
@@ -233,13 +233,13 @@ abstract class Client
 	private function generateAccessToken()
 	{
 		// Set the parameters.
-		$parameters = array(
+		$parameters = [
 			'oauth_token' => $this->token['key']
-		);
+		];
 
 		if (strcmp($this->version, '1.0a') === 0)
 		{
-			$parameters = array_merge($parameters, array('oauth_verifier' => $this->token['verifier']));
+			$parameters = array_merge($parameters, ['oauth_verifier' => $this->token['verifier']]);
 		}
 
 		// Make an OAuth request for the Access Token.
@@ -248,7 +248,7 @@ abstract class Client
 		parse_str($response->body, $params);
 
 		// Save the access token.
-		$this->token = array('key' => $params['oauth_token'], 'secret' => $params['oauth_token_secret']);
+		$this->token = ['key' => $params['oauth_token'], 'secret' => $params['oauth_token_secret']];
 	}
 
 	/**
@@ -265,16 +265,16 @@ abstract class Client
 	 * @since   1.0
 	 * @throws  \DomainException
 	 */
-	public function oauthRequest($url, $method, $parameters, $data = array(), $headers = array())
+	public function oauthRequest($url, $method, $parameters, $data = [], $headers = [])
 	{
 		// Set the parameters.
-		$defaults = array(
-			'oauth_consumer_key' => $this->getOption('consumer_key'),
+		$defaults = [
+			'oauth_consumer_key'     => $this->getOption('consumer_key'),
 			'oauth_signature_method' => 'HMAC-SHA1',
-			'oauth_version' => '1.0',
-			'oauth_nonce' => $this->generateNonce(),
-			'oauth_timestamp' => time()
-		);
+			'oauth_version'          => '1.0',
+			'oauth_nonce'            => $this->generateNonce(),
+			'oauth_timestamp'        => time()
+		];
 
 		$parameters = array_merge($parameters, $defaults);
 
@@ -302,18 +302,18 @@ abstract class Client
 		switch ($method)
 		{
 			case 'GET':
-				$url = $this->toUrl($url, $data);
-				$response = $this->client->get($url, array('Authorization' => $this->createHeader($oauth_headers)));
+				$url      = $this->toUrl($url, $data);
+				$response = $this->client->get($url, ['Authorization' => $this->createHeader($oauth_headers)]);
 				break;
 
 			case 'POST':
 			case 'PUT':
-				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
+				$headers  = array_merge($headers, ['Authorization' => $this->createHeader($oauth_headers)]);
 				$response = $this->client->{strtolower($method)}($url, $data, $headers);
 				break;
 
 			case 'DELETE':
-				$headers = array_merge($headers, array('Authorization' => $this->createHeader($oauth_headers)));
+				$headers  = array_merge($headers, ['Authorization' => $this->createHeader($oauth_headers)]);
 				$response = $this->client->delete($url, $headers);
 				break;
 		}
@@ -340,7 +340,7 @@ abstract class Client
 	/**
 	 * Method used to create the header for the POST request.
 	 *
-	 * @param   array  $parameters  Array containing request parameters.
+	 * @param   array $parameters Array containing request parameters.
 	 *
 	 * @return  string  The header.
 	 *
@@ -437,8 +437,8 @@ abstract class Client
 		$parameters['oauth_signature'] = $this->safeEncode(
 			base64_encode(
 				hash_hmac('sha1', $base, $this->prepareSigningKey(), true)
-				)
-			);
+			)
+		);
 
 		return $parameters;
 	}
@@ -468,14 +468,14 @@ abstract class Client
 			{
 				foreach ($value as $k => $v)
 				{
-					$v = $this->safeEncode($v);
+					$v    = $this->safeEncode($v);
 					$kv[] = "{$key}={$v}";
 				}
 			}
 			else
 			{
 				$value = $this->safeEncode($value);
-				$kv[] = "{$key}={$value}";
+				$kv[]  = "{$key}={$value}";
 			}
 		}
 
@@ -483,11 +483,11 @@ abstract class Client
 		$params = implode('&', $kv);
 
 		// Signature base string elements.
-		$base = array(
+		$base = [
 			$method,
 			$url,
 			$params
-			);
+		];
 
 		// Return the base string.
 		return implode('&', $this->safeEncode($base));
@@ -507,14 +507,14 @@ abstract class Client
 	{
 		if (is_array($data))
 		{
-			return array_map(array($this, 'safeEncode'), $data);
+			return array_map([$this, 'safeEncode'], $data);
 		}
 
 		if (is_scalar($data))
 		{
 			return str_ireplace(
-				array('+', '%7E'),
-				array(' ', '~'),
+				['+', '%7E'],
+				[' ', '~'],
 				rawurlencode($data)
 			);
 		}
@@ -531,11 +531,8 @@ abstract class Client
 	 */
 	public static function generateNonce()
 	{
-		$mt = microtime();
-		$rand = mt_rand();
-
 		// The md5s look nicer than numbers.
-		return md5($mt . $rand);
+		return md5(microtime() . mt_rand());
 	}
 
 	/**
@@ -581,7 +578,7 @@ abstract class Client
 	 * @param   string  $key    The name of the option to set
 	 * @param   mixed   $value  The option value to set
 	 *
-	 * @return  Client  This object for method chaining
+	 * @return  $this
 	 *
 	 * @since   1.0
 	 */
@@ -609,7 +606,7 @@ abstract class Client
 	 *
 	 * @param   array  $token  The access token key and secret.
 	 *
-	 * @return  Client  This object for method chaining.
+	 * @return  $this
 	 *
 	 * @since   1.0
 	 */

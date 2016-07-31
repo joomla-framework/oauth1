@@ -85,11 +85,11 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$my_url = 'TEST_URL';
 
 		$this->options     = new Registry;
-		$this->client      = $this->getMock('Joomla\\Http\\Http', array('get', 'post', 'delete', 'put'));
+		$this->client      = $this->getMockBuilder('Joomla\\Http\\Http')->getMock();
 		$this->input       = new Input;
 		$this->application = new WebInspector;
 
-		$mockSession = $this->getMock('Joomla\\Session\\SessionInterface');
+		$mockSession = $this->getMockBuilder('Joomla\\Session\\SessionInterface')->getMock();
 
 		$this->application->setSession($mockSession);
 
@@ -190,7 +190,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			TestHelper::setValue($input, 'data', $data);
 
 			// Get mock session
-			$mockSession = $this->getMock('Joomla\\Session\\SessionInterface');
+			$mockSession = $this->getMockBuilder('Joomla\\Session\\SessionInterface')->getMock();
 
 			if ($fail)
 			{

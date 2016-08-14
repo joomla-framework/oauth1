@@ -532,7 +532,7 @@ abstract class Client
 	public static function generateNonce()
 	{
 		// The md5s look nicer than numbers.
-		return md5(microtime() . mt_rand());
+		return md5(microtime() . random_bytes(16));
 	}
 
 	/**

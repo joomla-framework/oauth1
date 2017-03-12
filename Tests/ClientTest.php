@@ -12,11 +12,12 @@ use Joomla\Registry\Registry;
 use Joomla\Input\Input;
 use Joomla\Test\WebInspector;
 use Joomla\Test\TestHelper;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Test class for \Joomla\OAuth1\Client.
  */
-class ClientTest extends \PHPUnit_Framework_TestCase
+class ClientTest extends TestCase
 {
 	/**
 	 * Input object for the Client object.
@@ -206,7 +207,16 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
 				$this->application->setSession($mockSession);
 
-				$this->setExpectedException('DomainException');
+				// expectException was added in PHPUnit 5.2 and setExpectedException removed in 6.0
+				if (method_exists($this, 'expectException'))
+				{
+					$this->expectException('DomainException');
+				}
+				else
+				{
+					$this->setExpectedException('DomainException');
+				}
+
 				$result = $this->object->authenticate();
 			}
 

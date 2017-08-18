@@ -6,11 +6,13 @@
 
 namespace Joomla\OAuth1\Tests;
 
+use Joomla\Application\AbstractWebApplication;
+use Joomla\Http\Http;
 use Joomla\OAuth1\Client;
 use Joomla\OAuth1\Tests\Stub\TestClient;
 use Joomla\Registry\Registry;
 use Joomla\Input\Input;
-use Joomla\Test\WebInspector;
+use Joomla\Session\SessionInterface;
 use Joomla\Test\TestHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -86,11 +88,11 @@ class ClientTest extends TestCase
 		$my_url = 'TEST_URL';
 
 		$this->options     = new Registry;
-		$this->client      = $this->getMockBuilder('Joomla\\Http\\Http')->getMock();
+		$this->client      = $this->getMockBuilder(Http::class)->getMock();
 		$this->input       = new Input;
-		$this->application = new WebInspector;
+		$this->application = $this->getMockForAbstractClass(AbstractWebApplication::class);
 
-		$mockSession = $this->getMockBuilder('Joomla\\Session\\SessionInterface')->getMock();
+		$mockSession = $this->getMockBuilder(SessionInterface::class)->getMock();
 
 		$this->application->setSession($mockSession);
 
@@ -191,7 +193,7 @@ class ClientTest extends TestCase
 			TestHelper::setValue($input, 'data', $data);
 
 			// Get mock session
-			$mockSession = $this->getMockBuilder('Joomla\\Session\\SessionInterface')->getMock();
+			$mockSession = $this->getMockBuilder(SessionInterface::class)->getMock();
 
 			if ($fail)
 			{
@@ -207,15 +209,7 @@ class ClientTest extends TestCase
 
 				$this->application->setSession($mockSession);
 
-				// expectException was added in PHPUnit 5.2 and setExpectedException removed in 6.0
-				if (method_exists($this, 'expectException'))
-				{
-					$this->expectException('DomainException');
-				}
-				else
-				{
-					$this->setExpectedException('DomainException');
-				}
+				$this->expectException('DomainException');
 
 				$result = $this->object->authenticate();
 			}

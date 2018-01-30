@@ -8,10 +8,9 @@ namespace Joomla\OAuth1\Tests;
 
 use Joomla\Application\AbstractWebApplication;
 use Joomla\Http\Http;
-use Joomla\OAuth1\Client;
+use Joomla\Input\Input;
 use Joomla\OAuth1\Tests\Stub\TestClient;
 use Joomla\Registry\Registry;
-use Joomla\Input\Input;
 use Joomla\Session\SessionInterface;
 use Joomla\Test\TestHelper;
 use PHPUnit\Framework\TestCase;
@@ -50,9 +49,7 @@ class ClientTest extends TestCase
 	protected $object;
 
 	/**
-	 * The application object to send HTTP headers for redirects.
-	 *
-	 * @var  \Joomla\Application\AbstractWebApplication
+	 * @var   AbstractWebApplication|\PHPUnit_Framework_MockObject_MockObject  The application object to send HTTP headers for redirects.
 	 */
 	protected $application;
 
@@ -243,7 +240,7 @@ class ClientTest extends TestCase
 	}
 
 	/**
-	 * Tests the _generateRequestToken method - failure
+	 * Tests the generateRequestToken method - failure
 	 *
 	 * @expectedException  \DomainException
 	 */

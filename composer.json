@@ -4,7 +4,7 @@
     "description": "Joomla OAuth1 Package",
     "keywords": ["joomla", "framework", "oauth1"],
     "homepage": "https://github.com/joomla-framework/oauth1",
-    "license": "GPL-2.0+",
+    "license": "GPL-2.0-or-later",
     "require": {
         "php": "~7.0",
         "joomla/application": "~2.0",
@@ -14,10 +14,10 @@
         "joomla/session": "~1.0|~2.0"
     },
     "require-dev": {
+        "joomla/coding-standards": "~2.0@alpha",
+        "joomla/event": "~1.0",
         "joomla/test": "~1.0",
-        "joomla/event": "~1.0|~2.0",
-        "phpunit/phpunit": "~6.3",
-        "squizlabs/php_codesniffer": "1.*"
+        "phpunit/phpunit": "~6.3"
     },
     "autoload": {
         "psr-4": {

@@ -8,9 +8,9 @@
 
 namespace Joomla\OAuth1;
 
+use Joomla\Application\AbstractWebApplication;
 use Joomla\Http\Http;
 use Joomla\Input\Input;
-use Joomla\Application\AbstractWebApplication;
 
 /**
  * Joomla Framework class for interacting with an OAuth 1.0 and 1.0a server.
@@ -273,7 +273,7 @@ abstract class Client
 			'oauth_signature_method' => 'HMAC-SHA1',
 			'oauth_version'          => '1.0',
 			'oauth_nonce'            => $this->generateNonce(),
-			'oauth_timestamp'        => time()
+			'oauth_timestamp'        => time(),
 		];
 
 		$parameters = array_merge($parameters, $defaults);
@@ -304,21 +304,25 @@ abstract class Client
 			case 'GET':
 				$url      = $this->toUrl($url, $data);
 				$response = $this->client->get($url, ['Authorization' => $this->createHeader($oauthHeaders)]);
+
 				break;
 
 			case 'POST':
 				$headers  = array_merge($headers, ['Authorization' => $this->createHeader($oauthHeaders)]);
 				$response = $this->client->post($url, $data, $headers);
+
 				break;
 
 			case 'PUT':
 				$headers  = array_merge($headers, ['Authorization' => $this->createHeader($oauthHeaders)]);
 				$response = $this->client->put($url, $data, $headers);
+
 				break;
 
 			case 'DELETE':
 				$headers  = array_merge($headers, ['Authorization' => $this->createHeader($oauthHeaders)]);
 				$response = $this->client->delete($url, $headers);
+
 				break;
 		}
 
@@ -490,7 +494,7 @@ abstract class Client
 		$base = [
 			$method,
 			$url,
-			$params
+			$params,
 		];
 
 		// Return the base string.

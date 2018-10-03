@@ -80,7 +80,7 @@ abstract class Client
 	 */
 	public function __construct(AbstractWebApplication $application, Http $client = null, Input $input = null, $options = [], $version = '1.0a')
 	{
-		if (!is_array($options) && !($options instanceof \ArrayAccess))
+		if (!\is_array($options) && !($options instanceof \ArrayAccess))
 		{
 			throw new \InvalidArgumentException(
 				'The options param must be an array or implement the ArrayAccess interface.'
@@ -134,7 +134,7 @@ abstract class Client
 			// Get token form session.
 			$this->token = [
 				'key'    => $session->get('oauth_token.key'),
-				'secret' => $session->get('oauth_token.secret')
+				'secret' => $session->get('oauth_token.secret'),
 			];
 
 			// Verify the returned request token.
@@ -234,7 +234,7 @@ abstract class Client
 	{
 		// Set the parameters.
 		$parameters = [
-			'oauth_token' => $this->token['key']
+			'oauth_token' => $this->token['key'],
 		];
 
 		if (strcmp($this->version, '1.0a') === 0)

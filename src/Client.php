@@ -97,7 +97,7 @@ abstract class Client
 	/**
 	 * Method to form the oauth flow.
 	 *
-	 * @return  string  The access token.
+	 * @return  array|null  The access token.
 	 *
 	 * @since   1.0
 	 * @throws  \DomainException

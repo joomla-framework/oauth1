@@ -13,10 +13,13 @@ use Joomla\OAuth1\Tests\Stub\TestClient;
 use Joomla\Registry\Registry;
 use Joomla\Session\SessionInterface;
 use Joomla\Test\TestHelper;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Test class for \Joomla\OAuth1\Client.
+ *
+ * @backupGlobals enabled
  */
 class ClientTest extends TestCase
 {
@@ -37,19 +40,21 @@ class ClientTest extends TestCase
 	/**
 	 * Mock HTTP object.
 	 *
-	 * @var  \Joomla\Http\Http
+	 * @var  Http|MockObject
 	 */
 	protected $client;
 
 	/**
 	 * An instance of the object to test.
 	 *
-	 * @var  ClientInspector
+	 * @var  TestClient
 	 */
 	protected $object;
 
 	/**
-	 * @var   AbstractWebApplication|\PHPUnit_Framework_MockObject_MockObject  The application object to send HTTP headers for redirects.
+	 * The application object to send HTTP headers for redirects.
+	 *
+	 * @var   AbstractWebApplication|MockObject
 	 */
 	protected $application;
 
@@ -73,23 +78,23 @@ class ClientTest extends TestCase
 	 *
 	 * @return  void
 	 */
-	protected function setUp()
+	protected function setUp(): void
 	{
-		$_SERVER['HTTP_HOST'] = 'example.com';
+		$_SERVER['HTTP_HOST']       = 'example.com';
 		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0';
-		$_SERVER['REQUEST_URI'] = '/index.php';
-		$_SERVER['SCRIPT_NAME'] = '/index.php';
+		$_SERVER['REQUEST_URI']     = '/index.php';
+		$_SERVER['SCRIPT_NAME']     = '/index.php';
 
 		$key    = 'TEST_KEY';
 		$secret = 'TEST_SECRET';
 		$my_url = 'TEST_URL';
 
 		$this->options     = new Registry;
-		$this->client      = $this->getMockBuilder(Http::class)->getMock();
-		$this->input       = new Input;
+		$this->client      = $this->createMock(Http::class);
+		$this->input       = new Input([]);
 		$this->application = $this->getMockForAbstractClass(AbstractWebApplication::class);
 
-		$mockSession = $this->getMockBuilder(SessionInterface::class)->getMock();
+		$mockSession = $this->createMock(SessionInterface::class);
 
 		$this->application->setSession($mockSession);
 
@@ -99,29 +104,27 @@ class ClientTest extends TestCase
 	}
 
 	/**
-	 * Provides test data.
-	 *
-	 * @return  array
-	 */
-	public function seedAuthenticate()
-	{
-		// Token, fail and oauth version.
-		return array(
-			array(array('key' => 'valid', 'secret' => 'valid'), false, '1.0'),
-			array(null, false, '1.0'),
-			array(null, false, '1.0a'),
-			array(null, true, '1.0a')
-		);
-	}
-
-	/**
 	 * Tests the constructor to ensure only arrays or ArrayAccess objects are allowed
-	 *
-	 * @expectedException  \InvalidArgumentException
 	 */
 	public function testConstructorDisallowsNonArrayObjects()
 	{
+		$this->expectException(\InvalidArgumentException::class);
+
 		new TestClient($this->application, $this->client, $this->input, new \stdClass);
+	}
+
+	/**
+	 * Provides test data.
+	 *
+	 * @return  \Generator
+	 */
+	public function seedAuthenticate(): \Generator
+	{
+		// Token, fail and oauth version.
+		yield [['key' => 'valid', 'secret' => 'valid'], false, '1.0'];
+		yield [null, false, '1.0'];
+		yield [null, false, '1.0a'];
+		yield [null, true, '1.0a'];
 	}
 
 	/**
@@ -160,7 +163,6 @@ class ClientTest extends TestCase
 
 			$input = TestHelper::getValue($this->object, 'input');
 			$input->set('oauth_verifier', null);
-			TestHelper::setValue($this->object, 'input', $input);
 
 			if (strcmp($version, '1.0a') === 0)
 			{
@@ -176,21 +178,22 @@ class ClientTest extends TestCase
 			// Access token.
 			$input = TestHelper::getValue($this->object, 'input');
 
-			if (strcmp($version, '1.0a') === 0)
+			TestHelper::setValue($this->object, 'version', $version);
+
+			if ($version === '1.0a')
 			{
-				TestHelper::setValue($this->object, 'version', $version);
-				$data = array('oauth_verifier' => 'verifier', 'oauth_token' => 'token');
+				$data = ['oauth_verifier' => 'verifier', 'oauth_token' => 'token'];
 			}
 			else
 			{
-				TestHelper::setValue($this->object, 'version', $version);
-				$data = array('oauth_token' => 'token');
+				$data = ['oauth_token' => 'token'];
 			}
 
 			TestHelper::setValue($input, 'data', $data);
 
 			// Get mock session
-			$mockSession = $this->getMockBuilder(SessionInterface::class)->getMock();
+			/** @var SessionInterface|MockObject $mockSession */
+			$mockSession = $this->application->getSession();
 
 			if ($fail)
 			{
@@ -206,9 +209,9 @@ class ClientTest extends TestCase
 
 				$this->application->setSession($mockSession);
 
-				$this->expectException('DomainException');
+				$this->expectException(\DomainException::class);
 
-				$result = $this->object->authenticate();
+				$this->object->authenticate();
 			}
 
 			$mockSession->expects($this->at(0))
@@ -241,11 +244,11 @@ class ClientTest extends TestCase
 
 	/**
 	 * Tests the generateRequestToken method - failure
-	 *
-	 * @expectedException  \DomainException
 	 */
 	public function testGenerateRequestTokenFailure()
 	{
+		$this->expectException(\DomainException::class);
+
 		$this->object->setOption('requestTokenURL', 'https://example.com/request_token');
 
 		$returnData = new \stdClass;
@@ -261,18 +264,15 @@ class ClientTest extends TestCase
 	}
 
 	/**
-	* Provides test data.
-	*
-	* @return  array
-	*/
-	public function seedOauthRequest()
+	 * Provides test data.
+	 *
+	 * @return  \Generator
+	 */
+	public function seedOauthRequest(): \Generator
 	{
-		// Method
-		return array(
-			array('GET'),
-			array('PUT'),
-			array('DELETE')
-		);
+		yield 'GET request' => ['GET'];
+		yield 'PUT request' => ['PUT'];
+		yield 'DELETE request' => ['DELETE'];
 	}
 
 	/**
@@ -288,9 +288,9 @@ class ClientTest extends TestCase
 		$returnData->code = 200;
 		$returnData->body = $this->sampleString;
 
-		if (strcmp($method, 'PUT') === 0)
+		if ($method === 'PUT')
 		{
-			$data = array('key1' => 'value1', 'key2' => 'value2');
+			$data = ['key1' => 'value1', 'key2' => 'value2'];
 			$this->client->expects($this->at(0))
 				->method($method, $data)
 				->with('www.example.com')
@@ -301,9 +301,9 @@ class ClientTest extends TestCase
 				$this->object->oauthRequest(
 					'www.example.com',
 					$method,
-					array('oauth_token' => '1235'),
+					['oauth_token' => '1235'],
 					$data,
-					array('Content-Type' => 'multipart/form-data')
+					['Content-Type' => 'multipart/form-data']
 				)
 			);
 		}
@@ -319,9 +319,9 @@ class ClientTest extends TestCase
 				$this->object->oauthRequest(
 					'www.example.com',
 					$method,
-					array('oauth_token' => '1235'),
-					array(),
-					array('Content-Type' => 'multipart/form-data')
+					['oauth_token' => '1235'],
+					[],
+					['Content-Type' => 'multipart/form-data']
 				)
 			);
 		}

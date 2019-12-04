@@ -10,6 +10,7 @@ namespace Joomla\OAuth1;
 
 use Joomla\Application\SessionAwareWebApplicationInterface;
 use Joomla\Http\Http;
+use Joomla\Http\HttpFactory;
 use Joomla\Input\Input;
 
 /**

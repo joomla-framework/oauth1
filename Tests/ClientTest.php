@@ -6,7 +6,7 @@
 
 namespace Joomla\OAuth1\Tests;
 
-use Joomla\Application\AbstractWebApplication;
+use Joomla\Application\SessionAwareWebApplicationInterface;
 use Joomla\Http\Http;
 use Joomla\Input\Input;
 use Joomla\OAuth1\Tests\Stub\TestClient;
@@ -54,7 +54,7 @@ class ClientTest extends TestCase
 	/**
 	 * The application object to send HTTP headers for redirects.
 	 *
-	 * @var   AbstractWebApplication|MockObject
+	 * @var   SessionAwareWebApplicationInterface|MockObject
 	 */
 	protected $application;
 
@@ -92,7 +92,7 @@ class ClientTest extends TestCase
 		$this->options     = new Registry;
 		$this->client      = $this->createMock(Http::class);
 		$this->input       = new Input([]);
-		$this->application = $this->getMockForAbstractClass(AbstractWebApplication::class);
+		$this->application = $this->createMock(SessionAwareWebApplicationInterface::class);
 
 		$mockSession = $this->createMock(SessionInterface::class);
 

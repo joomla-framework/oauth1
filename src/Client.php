@@ -8,7 +8,7 @@
 
 namespace Joomla\OAuth1;
 
-use Joomla\Application\AbstractWebApplication;
+use Joomla\Application\SessionAwareWebApplicationInterface;
 use Joomla\Http\Http;
 use Joomla\Input\Input;
 
@@ -54,7 +54,7 @@ abstract class Client
 	/**
 	 * The application object to send HTTP headers for redirects.
 	 *
-	 * @var    AbstractWebApplication
+	 * @var    SessionAwareWebApplicationInterface
 	 * @since  1.0
 	 */
 	protected $application;
@@ -70,15 +70,21 @@ abstract class Client
 	/**
 	 * Constructor.
 	 *
-	 * @param   AbstractWebApplication  $application  The application object
-	 * @param   Http                    $client       The HTTP client object.
-	 * @param   Input                   $input        The input object
-	 * @param   array|\ArrayAccess      $options      OAuth1 Client options.
-	 * @param   string                  $version      Specify the OAuth version. By default we are using 1.0a.
+	 * @param   SessionAwareWebApplicationInterface  $application  The application object
+	 * @param   Http                                 $client       The HTTP client object.
+	 * @param   Input                                $input        The input object
+	 * @param   array|\ArrayAccess                   $options      OAuth1 Client options.
+	 * @param   string                               $version      Specify the OAuth version. By default we are using 1.0a.
 	 *
 	 * @since   1.0
 	 */
-	public function __construct(AbstractWebApplication $application, Http $client = null, Input $input = null, $options = [], $version = '1.0a')
+	public function __construct(
+		SessionAwareWebApplicationInterface $application,
+		Http $client = null,
+		Input $input = null,
+		$options = [],
+		$version = '1.0a'
+	)
 	{
 		if (!\is_array($options) && !($options instanceof \ArrayAccess))
 		{

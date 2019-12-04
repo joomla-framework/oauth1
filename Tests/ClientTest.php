@@ -94,9 +94,9 @@ class ClientTest extends TestCase
 		$this->input       = new Input([]);
 		$this->application = $this->createMock(SessionAwareWebApplicationInterface::class);
 
-		$mockSession = $this->createMock(SessionInterface::class);
-
-		$this->application->setSession($mockSession);
+		$this->application->expects($this->any())
+			->method('getSession')
+			->willReturn($this->createMock(SessionInterface::class));
 
 		$this->options->set('consumer_key', $key);
 		$this->options->set('consumer_secret', $secret);
@@ -207,8 +207,6 @@ class ClientTest extends TestCase
 					->with('oauth_token.secret')
 					->willReturn('session');
 
-				$this->application->setSession($mockSession);
-
 				$this->expectException(\DomainException::class);
 
 				$this->object->authenticate();
@@ -223,8 +221,6 @@ class ClientTest extends TestCase
 				->method('get')
 				->with('oauth_token.secret')
 				->willReturn('secret');
-
-			$this->application->setSession($mockSession);
 
 			$returnData = new \stdClass;
 			$returnData->code = 200;

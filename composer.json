@@ -11,7 +11,8 @@
         "joomla/http": "^1.2.2|^2.0",
         "joomla/input": "^1.2|^2.0",
         "joomla/registry": "^1.4.5|^2.0",
-        "joomla/session": "^2.0"
+        "joomla/session": "^2.0",
+        "joomla/uri": "^1.1|^2.0"
     },
     "require-dev": {
         "joomla/coding-standards": "^2.0@alpha",

@@ -12,6 +12,7 @@ use Joomla\Application\SessionAwareWebApplicationInterface;
 use Joomla\Http\Http;
 use Joomla\Http\HttpFactory;
 use Joomla\Input\Input;
+use Joomla\Uri\Uri;
 
 /**
  * Joomla Framework class for interacting with an OAuth 1.0 and 1.0a server.
@@ -392,45 +393,10 @@ abstract class Client
 	 */
 	public function toUrl($url, $parameters)
 	{
-		foreach ($parameters as $key => $value)
-		{
-			if (\is_array($value))
-			{
-				foreach ($value as $k => $v)
-				{
-					if (strpos($url, '?') === false)
-					{
-						$url .= '?';
-					}
-					else
-					{
-						$url .= '&';
-					}
+		$uri = new Uri($url);
+		$uri->setQuery($parameters);
 
-					$url .= $key . '=' . $v;
-				}
-			}
-			else
-			{
-				if (strpos($value, ' ') !== false)
-				{
-					$value = $this->safeEncode($value);
-				}
-
-				if (strpos($url, '?') === false)
-				{
-					$url .= '?';
-				}
-				else
-				{
-					$url .= '&';
-				}
-
-				$url .= $key . '=' . $value;
-			}
-		}
-
-		return $url;
+		return (string) $uri;
 	}
 
 	/**

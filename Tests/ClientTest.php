@@ -288,8 +288,8 @@ class ClientTest extends TestCase
 		{
 			$data = ['key1' => 'value1', 'key2' => 'value2'];
 			$this->client->expects($this->at(0))
-				->method($method, $data)
-				->with('www.example.com')
+				->method($method)
+				->with('www.example.com', $data)
 				->willReturn($returnData);
 
 			$this->assertSame(

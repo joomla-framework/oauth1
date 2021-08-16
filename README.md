@@ -65,12 +65,12 @@ The following resources contain more information:
 
 ## Installation via Composer
 
-Add `"joomla/oauth1": "2.0.*@dev"` to the require block in your composer.json and then run `composer install`.
+Add `"joomla/oauth1": "~2.0"` to the require block in your composer.json and then run `composer install`.
 
 ```json
 {
 	"require": {
-		"joomla/oauth1": "2.0.*@dev"
+		"joomla/oauth1": "~2.0"
 	}
 }
 ```
@@ -78,5 +78,5 @@ Add `"joomla/oauth1": "2.0.*@dev"` to the require block in your composer.json an
 Alternatively, you can simply run the following from the command line:
 
 ```sh
-composer require joomla/oauth1 "2.0.*@dev"
+composer require joomla/oauth1 "~2.0"
 ```

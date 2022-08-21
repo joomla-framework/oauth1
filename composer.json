@@ -6,13 +6,13 @@
     "homepage": "https://github.com/joomla-framework/oauth1",
     "license": "GPL-2.0-or-later",
     "require": {
-        "php": "^7.2.5",
+        "php": "^7.2.5|~8.0.0|~8.1.0",
         "joomla/application": "^2.0",
-        "joomla/http": "^1.2.2|^2.0",
-        "joomla/input": "^1.2|^2.0",
-        "joomla/registry": "^1.4.5|^2.0",
+        "joomla/http": "^2.0",
+        "joomla/input": "^2.0",
+        "joomla/registry": "^2.0",
         "joomla/session": "^2.0",
-        "joomla/uri": "^1.1|^2.0"
+        "joomla/uri": "^2.0"
     },
     "require-dev": {
         "joomla/coding-standards": "^3.0@dev",

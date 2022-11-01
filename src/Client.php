@@ -96,7 +96,7 @@ abstract class Client
 		}
 
 		$this->application = $application;
-		$this->client      = $client ?: HttpFactory::getHttp($options);
+		$this->client      = $client ?: (new HttpFactory)->getHttp($options);
 		$this->input       = $input ?: $application->getInput();
 		$this->options     = $options;
 		$this->version     = $version;

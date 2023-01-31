@@ -13,27 +13,25 @@ use Joomla\OAuth1\Client;
  */
 class TestClient extends Client
 {
-	/**
-	 * {@inheritdoc}
-	 */
-	public function verifyCredentials()
-	{
-		if (!strcmp($this->token['key'], 'valid'))
-		{
-			return true;
-		}
+    /**
+     * {@inheritdoc}
+     */
+    public function verifyCredentials()
+    {
+        if (!strcmp($this->token['key'], 'valid')) {
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function validateResponse($url, $response)
-	{
-		if ($response->code < 200 || $response->code > 399)
-		{
-			throw new \DomainException($response->body);
-		}
-	}
+    /**
+     * {@inheritdoc}
+     */
+    public function validateResponse($url, $response)
+    {
+        if ($response->code < 200 || $response->code > 399) {
+            throw new \DomainException($response->body);
+        }
+    }
 }

@@ -74,8 +74,8 @@ abstract class Client
      * Constructor.
      *
      * @param   SessionAwareWebApplicationInterface  $application  The application object
-     * @param   Http                                 $client       The HTTP client object.
-     * @param   Input                                $input        The input object
+     * @param   ?Http                                $client       The HTTP client object.
+     * @param   ?Input                               $input        The input object
      * @param   array|\ArrayAccess                   $options      OAuth1 Client options.
      * @param   string                               $version      Specify the OAuth version. By default we are using 1.0a.
      *
@@ -416,6 +416,7 @@ abstract class Client
     {
         // Sort the parameters alphabetically
         uksort($parameters, 'strcmp');
+        $kv = [];
 
         // Encode parameters.
         foreach ($parameters as $key => $value) {
@@ -450,9 +451,9 @@ abstract class Client
      * Encodes the string or array passed in a way compatible with OAuth.
      * If an array is passed each array value will will be encoded.
      *
-     * @param   mixed  $data  The scalar or array to encode.
+     * @param   string|string[]  $data  The scalar or array to encode.
      *
-     * @return  string  $data encoded in a way compatible with OAuth.
+     * @return  string|string[]  $data encoded in a way compatible with OAuth.
      *
      * @since   1.0
      */

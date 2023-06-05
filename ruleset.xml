@@ -19,10 +19,4 @@
         <!-- Required due to methods having required params after optional, should be fixed in 2.0 -->
         <exclude name="PEAR.Functions.ValidDefaultValue"/>
     </rule>
-
-    <rule ref="Joomla.Classes.InstantiateNewClasses">
-        <properties>
-            <property name="shortArraySyntax" value="true"/>
-        </properties>
-    </rule>
 </ruleset>

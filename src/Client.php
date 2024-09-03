@@ -83,8 +83,8 @@ abstract class Client
      */
     public function __construct(
         SessionAwareWebApplicationInterface $application,
-        Http $client = null,
-        Input $input = null,
+        ?Http $client = null,
+        ?Input $input = null,
         $options = [],
         $version = '1.0a'
     ) {

@@ -14,6 +14,7 @@ use Joomla\OAuth1\Tests\Stub\TestClient;
 use Joomla\Registry\Registry;
 use Joomla\Session\SessionInterface;
 use Joomla\Test\TestHelper;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -117,15 +118,17 @@ class ClientTest extends TestCase
     /**
      * Provides test data.
      *
-     * @return  \Generator
+     * @return  array
      */
-    public function seedAuthenticate(): \Generator
+    public static function seedAuthenticateProvider(): array
     {
-        // Token, fail and oauth version.
-        yield [['key' => 'valid', 'secret' => 'valid'], false, '1.0'];
-        yield [null, false, '1.0'];
-        yield [null, false, '1.0a'];
-        yield [null, true, '1.0a'];
+        return [
+            // Token, fail and oauth version.
+            [['key' => 'valid', 'secret' => 'valid'], false, '1.0'],
+            [null, false, '1.0'],
+            [null, false, '1.0a'],
+            [null, true, '1.0a'],
+        ];
     }
 
     /**
@@ -134,9 +137,8 @@ class ClientTest extends TestCase
      * @param   array    $token    The passed token.
      * @param   boolean  $fail     Mark if should fail or not.
      * @param   string   $version  Specify oauth version 1.0 or 1.0a.
-     *
-     * @dataProvider seedAuthenticate
      */
+    #[DataProvider('seedAuthenticateProvider')]
     public function testAuthenticate($token, $fail, $version)
     {
         // Already got some credentials stored?
@@ -255,22 +257,23 @@ class ClientTest extends TestCase
     /**
      * Provides test data.
      *
-     * @return  \Generator
+     * @return  array
      */
-    public function seedOauthRequest(): \Generator
+    public static function seedOauthRequestProvider(): array
     {
-        yield 'GET request' => ['GET'];
-        yield 'PUT request' => ['PUT'];
-        yield 'DELETE request' => ['DELETE'];
+        return [
+            'GET request' => ['GET'],
+            'PUT request' => ['PUT'],
+            'DELETE request' => ['DELETE'],
+        ];
     }
 
     /**
      * Tests the oauthRequest method
      *
      * @param   string  $method  The request method.
-     *
-     * @dataProvider seedOauthRequest
      */
+    #[DataProvider('seedOauthRequestProvider')]
     public function testOauthRequest($method)
     {
         $returnData       = new \stdClass();

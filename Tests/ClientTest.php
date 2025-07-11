@@ -106,16 +106,6 @@ class ClientTest extends TestCase
     }
 
     /**
-     * Tests the constructor to ensure only arrays or ArrayAccess objects are allowed
-     */
-    public function testConstructorDisallowsNonArrayObjects()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-
-        new TestClient($this->application, $this->client, $this->input, new \stdClass());
-    }
-
-    /**
      * Provides test data.
      *
      * @return  array

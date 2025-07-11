@@ -146,7 +146,7 @@ class ClientTest extends TestCase
             $returnData->code = 200;
             $returnData->body = 'oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=true';
 
-            $this->client->expects($this->at(0))
+            $this->client->expects($this->any())
                 ->method('post')
                 ->with($this->object->getOption('requestTokenURL'))
                 ->willReturn($returnData);
@@ -182,12 +182,12 @@ class ClientTest extends TestCase
             $mockSession = $this->application->getSession();
 
             if ($fail) {
-                $mockSession->expects($this->at(0))
+                $mockSession->expects($this->any())
                     ->method('get')
                     ->with('oauth_token.key')
                     ->willReturn('bad');
 
-                $mockSession->expects($this->at(1))
+                $mockSession->expects($this->any())
                     ->method('get')
                     ->with('oauth_token.secret')
                     ->willReturn('session');
@@ -197,12 +197,12 @@ class ClientTest extends TestCase
                 $this->object->authenticate();
             }
 
-            $mockSession->expects($this->at(0))
+            $mockSession->expects($this->any())
                 ->method('get')
                 ->with('oauth_token.key')
                 ->willReturn('token');
 
-            $mockSession->expects($this->at(1))
+            $mockSession->expects($this->any())
                 ->method('get')
                 ->with('oauth_token.secret')
                 ->willReturn('secret');
@@ -211,7 +211,7 @@ class ClientTest extends TestCase
             $returnData->code = 200;
             $returnData->body = 'oauth_token=token_key&oauth_token_secret=token_secret';
 
-            $this->client->expects($this->at(0))
+            $this->client->expects($this->any())
                 ->method('post')
                 ->with($this->object->getOption('accessTokenURL'))
                 ->willReturn($returnData);
@@ -236,7 +236,7 @@ class ClientTest extends TestCase
         $returnData->code = 200;
         $returnData->body = 'oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=false';
 
-        $this->client->expects($this->at(0))
+        $this->client->expects($this->any())
             ->method('post')
             ->with($this->object->getOption('requestTokenURL'))
             ->willReturn($returnData);
@@ -272,7 +272,7 @@ class ClientTest extends TestCase
 
         if ($method === 'PUT') {
             $data = ['key1' => 'value1', 'key2' => 'value2'];
-            $this->client->expects($this->at(0))
+            $this->client->expects($this->any())
                 ->method($method)
                 ->with('www.example.com', $data)
                 ->willReturn($returnData);
@@ -288,7 +288,7 @@ class ClientTest extends TestCase
                 )
             );
         } else {
-            $this->client->expects($this->at(0))
+            $this->client->expects($this->any())
                 ->method($method)
                 ->with('www.example.com')
                 ->willReturn($returnData);

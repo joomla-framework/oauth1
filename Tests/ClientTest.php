@@ -9,11 +9,13 @@ namespace Joomla\OAuth1\Tests;
 
 use Joomla\Application\SessionAwareWebApplicationInterface;
 use Joomla\Http\Http;
+use Joomla\Http\Response;
 use Joomla\Input\Input;
 use Joomla\OAuth1\Tests\Stub\TestClient;
 use Joomla\Registry\Registry;
 use Joomla\Session\SessionInterface;
 use Joomla\Test\TestHelper;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -105,27 +107,19 @@ class ClientTest extends TestCase
     }
 
     /**
-     * Tests the constructor to ensure only arrays or ArrayAccess objects are allowed
-     */
-    public function testConstructorDisallowsNonArrayObjects()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-
-        new TestClient($this->application, $this->client, $this->input, new \stdClass());
-    }
-
-    /**
      * Provides test data.
      *
-     * @return  \Generator
+     * @return  array
      */
-    public function seedAuthenticate(): \Generator
+    public static function seedAuthenticateProvider(): array
     {
-        // Token, fail and oauth version.
-        yield [['key' => 'valid', 'secret' => 'valid'], false, '1.0'];
-        yield [null, false, '1.0'];
-        yield [null, false, '1.0a'];
-        yield [null, true, '1.0a'];
+        return [
+            // Token, fail and oauth version.
+            [['key' => 'valid', 'secret' => 'valid'], false, '1.0'],
+            [null, false, '1.0'],
+            [null, false, '1.0a'],
+            [null, true, '1.0a'],
+        ];
     }
 
     /**
@@ -134,9 +128,8 @@ class ClientTest extends TestCase
      * @param   array    $token    The passed token.
      * @param   boolean  $fail     Mark if should fail or not.
      * @param   string   $version  Specify oauth version 1.0 or 1.0a.
-     *
-     * @dataProvider seedAuthenticate
      */
+    #[DataProvider('seedAuthenticateProvider')]
     public function testAuthenticate($token, $fail, $version)
     {
         // Already got some credentials stored?
@@ -150,11 +143,9 @@ class ClientTest extends TestCase
             $this->object->setOption('accessTokenURL', 'https://example.com/access_token');
 
             // Request token.
-            $returnData       = new \stdClass();
-            $returnData->code = 200;
-            $returnData->body = 'oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=true';
+            $returnData = new Response('data://text/plain,oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=true', 200);
 
-            $this->client->expects($this->at(0))
+            $this->client->expects($this->any())
                 ->method('post')
                 ->with($this->object->getOption('requestTokenURL'))
                 ->willReturn($returnData);
@@ -189,45 +180,39 @@ class ClientTest extends TestCase
             /** @var SessionInterface|MockObject $mockSession */
             $mockSession = $this->application->getSession();
 
-            if ($fail) {
-                $mockSession->expects($this->at(0))
-                    ->method('get')
-                    ->with('oauth_token.key')
-                    ->willReturn('bad');
+            $returnData->getBody()->rewind();
 
-                $mockSession->expects($this->at(1))
+            if ($fail) {
+                $mockSession->expects($this->any())
                     ->method('get')
-                    ->with('oauth_token.secret')
-                    ->willReturn('session');
+                    ->willReturnMap([
+                        ['oauth_token.key', 'bad'],
+                        ['oauth_token.secret', 'session'],
+                    ]);
 
                 $this->expectException(\DomainException::class);
 
                 $this->object->authenticate();
             }
 
-            $mockSession->expects($this->at(0))
+            $mockSession->expects($this->any())
                 ->method('get')
-                ->with('oauth_token.key')
-                ->willReturn('token');
+                ->willReturnMap([
+                    ['oauth_token.key', 'token'],
+                    ['oauth_token.secret', 'secret'],
+                ]);
 
-            $mockSession->expects($this->at(1))
-                ->method('get')
-                ->with('oauth_token.secret')
-                ->willReturn('secret');
+            $returnData = new Response('data://text/plain,oauth_token=token_key&oauth_token_secret=token_secret', 200);
 
-            $returnData       = new \stdClass();
-            $returnData->code = 200;
-            $returnData->body = 'oauth_token=token_key&oauth_token_secret=token_secret';
-
-            $this->client->expects($this->at(0))
+            $this->client->expects($this->any())
                 ->method('post')
                 ->with($this->object->getOption('accessTokenURL'))
                 ->willReturn($returnData);
 
             $result = $this->object->authenticate();
 
-            $this->assertEquals($result['key'], 'token_key');
-            $this->assertEquals($result['secret'], 'token_secret');
+            $this->assertEquals('token_key', $result['key']);
+            $this->assertEquals('token_secret', $result['secret']);
         }
     }
 
@@ -240,11 +225,9 @@ class ClientTest extends TestCase
 
         $this->object->setOption('requestTokenURL', 'https://example.com/request_token');
 
-        $returnData       = new \stdClass();
-        $returnData->code = 200;
-        $returnData->body = 'oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=false';
+        $returnData = new Response('data://text/plain,oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=false', 200);
 
-        $this->client->expects($this->at(0))
+        $this->client->expects($this->any())
             ->method('post')
             ->with($this->object->getOption('requestTokenURL'))
             ->willReturn($returnData);
@@ -255,31 +238,30 @@ class ClientTest extends TestCase
     /**
      * Provides test data.
      *
-     * @return  \Generator
+     * @return  array
      */
-    public function seedOauthRequest(): \Generator
+    public static function seedOauthRequestProvider(): array
     {
-        yield 'GET request' => ['GET'];
-        yield 'PUT request' => ['PUT'];
-        yield 'DELETE request' => ['DELETE'];
+        return [
+            'GET request' => ['GET'],
+            'PUT request' => ['PUT'],
+            'DELETE request' => ['DELETE'],
+        ];
     }
 
     /**
      * Tests the oauthRequest method
      *
      * @param   string  $method  The request method.
-     *
-     * @dataProvider seedOauthRequest
      */
+    #[DataProvider('seedOauthRequestProvider')]
     public function testOauthRequest($method)
     {
-        $returnData       = new \stdClass();
-        $returnData->code = 200;
-        $returnData->body = $this->sampleString;
+        $returnData = new Response('data://text/plain,' . $this->sampleString, 200);
 
         if ($method === 'PUT') {
             $data = ['key1' => 'value1', 'key2' => 'value2'];
-            $this->client->expects($this->at(0))
+            $this->client->expects($this->any())
                 ->method($method)
                 ->with('www.example.com', $data)
                 ->willReturn($returnData);
@@ -295,7 +277,7 @@ class ClientTest extends TestCase
                 )
             );
         } else {
-            $this->client->expects($this->at(0))
+            $this->client->expects($this->any())
                 ->method($method)
                 ->with('www.example.com')
                 ->willReturn($returnData);

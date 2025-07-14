@@ -31,8 +31,8 @@ class TestClient extends Client
      */
     public function validateResponse($url, $response)
     {
-        if ($response->code < 200 || $response->code > 399) {
-            throw new \DomainException($response->body);
+        if ($response->getStatusCode() < 200 || $response->getStatusCode() > 399) {
+            throw new \DomainException($response->getBody()->getContents());
         }
     }
 }

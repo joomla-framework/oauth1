@@ -9,6 +9,7 @@ namespace Joomla\OAuth1\Tests;
 
 use Joomla\Application\SessionAwareWebApplicationInterface;
 use Joomla\Http\Http;
+use Joomla\Http\Response;
 use Joomla\Input\Input;
 use Joomla\OAuth1\Tests\Stub\TestClient;
 use Joomla\Registry\Registry;
@@ -142,9 +143,7 @@ class ClientTest extends TestCase
             $this->object->setOption('accessTokenURL', 'https://example.com/access_token');
 
             // Request token.
-            $returnData       = new \stdClass();
-            $returnData->code = 200;
-            $returnData->body = 'oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=true';
+            $returnData = new Response('data://text/plain,oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=true', 200);
 
             $this->client->expects($this->any())
                 ->method('post')
@@ -181,16 +180,15 @@ class ClientTest extends TestCase
             /** @var SessionInterface|MockObject $mockSession */
             $mockSession = $this->application->getSession();
 
+            $returnData->getBody()->rewind();
+
             if ($fail) {
                 $mockSession->expects($this->any())
                     ->method('get')
-                    ->with('oauth_token.key')
-                    ->willReturn('bad');
-
-                $mockSession->expects($this->any())
-                    ->method('get')
-                    ->with('oauth_token.secret')
-                    ->willReturn('session');
+                    ->willReturnMap([
+                        ['oauth_token.key', 'bad'],
+                        ['oauth_token.secret', 'session'],
+                    ]);
 
                 $this->expectException(\DomainException::class);
 
@@ -199,17 +197,12 @@ class ClientTest extends TestCase
 
             $mockSession->expects($this->any())
                 ->method('get')
-                ->with('oauth_token.key')
-                ->willReturn('token');
+                ->willReturnMap([
+                    ['oauth_token.key', 'token'],
+                    ['oauth_token.secret', 'secret'],
+                ]);
 
-            $mockSession->expects($this->any())
-                ->method('get')
-                ->with('oauth_token.secret')
-                ->willReturn('secret');
-
-            $returnData       = new \stdClass();
-            $returnData->code = 200;
-            $returnData->body = 'oauth_token=token_key&oauth_token_secret=token_secret';
+            $returnData = new Response('data://text/plain,oauth_token=token_key&oauth_token_secret=token_secret', 200);
 
             $this->client->expects($this->any())
                 ->method('post')
@@ -218,8 +211,8 @@ class ClientTest extends TestCase
 
             $result = $this->object->authenticate();
 
-            $this->assertEquals($result['key'], 'token_key');
-            $this->assertEquals($result['secret'], 'token_secret');
+            $this->assertEquals('token_key', $result['key']);
+            $this->assertEquals('token_secret', $result['secret']);
         }
     }
 
@@ -232,9 +225,7 @@ class ClientTest extends TestCase
 
         $this->object->setOption('requestTokenURL', 'https://example.com/request_token');
 
-        $returnData       = new \stdClass();
-        $returnData->code = 200;
-        $returnData->body = 'oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=false';
+        $returnData = new Response('data://text/plain,oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=false', 200);
 
         $this->client->expects($this->any())
             ->method('post')
@@ -266,9 +257,7 @@ class ClientTest extends TestCase
     #[DataProvider('seedOauthRequestProvider')]
     public function testOauthRequest($method)
     {
-        $returnData       = new \stdClass();
-        $returnData->code = 200;
-        $returnData->body = $this->sampleString;
+        $returnData = new Response('data://text/plain,' . $this->sampleString, 200);
 
         if ($method === 'PUT') {
             $data = ['key1' => 'value1', 'key2' => 'value2'];

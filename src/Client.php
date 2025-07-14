@@ -183,7 +183,7 @@ abstract class Client
         // Make an OAuth request for the Request Token.
         $response = $this->oauthRequest($this->getOption('requestTokenURL'), 'POST', $parameters);
 
-        parse_str($response->body, $params);
+        parse_str($response->getBody()->getContents(), $params);
 
         if (strcmp($this->version, '1.0a') === 0 && strcmp($params['oauth_callback_confirmed'], 'true') !== 0) {
             throw new \DomainException('Bad request token!');
@@ -240,7 +240,7 @@ abstract class Client
         // Make an OAuth request for the Access Token.
         $response = $this->oauthRequest($this->getOption('accessTokenURL'), 'POST', $parameters);
 
-        parse_str($response->body, $params);
+        parse_str($response->getBody()->getContents(), $params);
 
         // Save the access token.
         $this->token = ['key' => $params['oauth_token'], 'secret' => $params['oauth_token_secret']];
@@ -262,7 +262,7 @@ abstract class Client
      */
     public function oauthRequest($url, $method, $parameters, $data = [], $headers = [])
     {
-        if (!in_array(strtoupper($method), ['POST', 'PUT', 'PATCH', 'DELETE'])) {
+        if (!in_array(strtoupper($method), ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])) {
             throw new \DomainException('Invalid request method!');
         }
 
@@ -471,7 +471,7 @@ abstract class Client
         return str_ireplace(
             ['+', '%7E'],
             [' ', '~'],
-            rawurlencode($data)
+            rawurlencode((string) $data)
         );
     }
 

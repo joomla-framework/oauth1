@@ -143,12 +143,11 @@ class ClientTest extends TestCase
             $this->object->setOption('accessTokenURL', 'https://example.com/access_token');
 
             // Request token.
-            $returnData = new Response('data://text/plain,oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=true', 200);
+            $returnData  = new Response('data://text/plain,oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=true', 200);
+            $returnData2 = new Response('data://text/plain,oauth_token=token_key&oauth_token_secret=token_secret', 200);
 
-            $this->client->expects($this->any())
-                ->method('post')
-                ->with($this->object->getOption('requestTokenURL'))
-                ->willReturn($returnData);
+            $this->client->method('post')
+                ->willReturnOnConsecutiveCalls($returnData, $returnData2);
 
             $input = TestHelper::getValue($this->object, 'input');
             $input->set('oauth_verifier', null);
@@ -180,8 +179,6 @@ class ClientTest extends TestCase
             /** @var SessionInterface|MockObject $mockSession */
             $mockSession = $this->application->getSession();
 
-            $returnData->getBody()->rewind();
-
             if ($fail) {
                 $mockSession->expects($this->any())
                     ->method('get')
@@ -202,13 +199,6 @@ class ClientTest extends TestCase
                     ['oauth_token.secret', 'secret'],
                 ]);
 
-            $returnData = new Response('data://text/plain,oauth_token=token_key&oauth_token_secret=token_secret', 200);
-
-            $this->client->expects($this->any())
-                ->method('post')
-                ->with($this->object->getOption('accessTokenURL'))
-                ->willReturn($returnData);
-
             $result = $this->object->authenticate();
 
             $this->assertEquals('token_key', $result['key']);
@@ -227,8 +217,7 @@ class ClientTest extends TestCase
 
         $returnData = new Response('data://text/plain,oauth_token=token&oauth_token_secret=secret&oauth_callback_confirmed=false', 200);
 
-        $this->client->expects($this->any())
-            ->method('post')
+        $this->client->method('post')
             ->with($this->object->getOption('requestTokenURL'))
             ->willReturn($returnData);
 
@@ -257,7 +246,9 @@ class ClientTest extends TestCase
     #[DataProvider('seedOauthRequestProvider')]
     public function testOauthRequest($method)
     {
-        $returnData = new Response('data://text/plain,' . $this->sampleString, 200);
+        $returnData   = new Response('data://text/plain,' . $this->sampleString, 200);
+        $this->client = $this->createMock(Http::class);
+        $this->object = new TestClient($this->application, $this->client, $this->input, $this->options);
 
         if ($method === 'PUT') {
             $data = ['key1' => 'value1', 'key2' => 'value2'];

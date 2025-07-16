@@ -7,8 +7,6 @@
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
-declare(strict_types=1);
-
 namespace Joomla\OAuth1;
 
 use Joomla\Application\SessionAwareWebApplicationInterface;
@@ -88,8 +86,8 @@ abstract class Client
         SessionAwareWebApplicationInterface $application,
         ?Http $client = null,
         ?Input $input = null,
-        array|\ArrayAccess $options = [],
-        string $version = '1.0a'
+        $options = [],
+        $version = '1.0a'
     ) {
         $this->application = $application;
         $this->client      = $client ?: (new HttpFactory())->getHttp($options);

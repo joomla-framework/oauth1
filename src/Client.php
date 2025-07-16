@@ -114,7 +114,7 @@ abstract class Client
                 return $this->token;
             }
 
-            $this->token = null;
+            $this->token = [];
         }
 
         // Check for callback.

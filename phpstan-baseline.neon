@@ -1,0 +1,36 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method Joomla\\\\OAuth1\\\\Client\\:\\:authenticate\\(\\) should return array\\|null but return statement is missing\\.$#"
+			count: 1
+			path: src/Client.php
+
+		-
+			message: "#^Parameter \\#2 \\$response of method Joomla\\\\OAuth1\\\\Client\\:\\:validateResponse\\(\\) expects Joomla\\\\OAuth1\\\\Response, Joomla\\\\Http\\\\Response given\\.$#"
+			count: 1
+			path: src/Client.php
+
+		-
+			message: "#^Parameter \\$response of method Joomla\\\\OAuth1\\\\Client\\:\\:validateResponse\\(\\) has invalid type Joomla\\\\OAuth1\\\\Response\\.$#"
+			count: 1
+			path: src/Client.php
+
+		-
+			message: "#^Property Joomla\\\\OAuth1\\\\Client\\:\\:\\$token \\(array\\) does not accept null\\.$#"
+			count: 1
+			path: src/Client.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: src/Client.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: src/Client.php
+
+		-
+			message: "#^Variable \\$response might not be defined\\.$#"
+			count: 2
+			path: src/Client.php

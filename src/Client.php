@@ -179,7 +179,7 @@ abstract class Client
         // Make an OAuth request for the Request Token.
         $response = $this->oauthRequest($this->getOption('requestTokenURL'), 'POST', $parameters);
 
-        parse_str($response->getBody()->getContents(), $params);
+        parse_str((string) $response->getBody(), $params);
 
         if (strcmp($this->version, '1.0a') === 0 && strcmp($params['oauth_callback_confirmed'], 'true') !== 0) {
             throw new \DomainException('Bad request token!');
@@ -236,7 +236,7 @@ abstract class Client
         // Make an OAuth request for the Access Token.
         $response = $this->oauthRequest($this->getOption('accessTokenURL'), 'POST', $parameters);
 
-        parse_str($response->getBody()->getContents(), $params);
+        parse_str((string) $response->getBody(), $params);
 
         // Save the access token.
         $this->token = ['key' => $params['oauth_token'], 'secret' => $params['oauth_token_secret']];

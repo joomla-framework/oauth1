@@ -311,7 +311,7 @@ abstract class Client
 
             case 'DELETE':
                 $headers  = array_merge($headers, ['Authorization' => $this->createHeader($oauthHeaders)]);
-                $response = $this->client->delete($url, $headers);
+                $response = $this->client->delete($url, $headers, null, $data === [] ? null : $data);
 
                 break;
         }

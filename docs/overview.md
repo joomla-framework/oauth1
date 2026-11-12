@@ -46,6 +46,8 @@ When calling the authenticate() method, your stored access token will be used on
 
 Now you can perform authorised requests using the oauthRequest method.
 
+For `DELETE` requests an array of `$data` is signed and sent as the request body.
+
 ### A More Complete Example
 
 See the Twitter and LinkedIn packages for examples demonstrating more about the OAuth1 package.

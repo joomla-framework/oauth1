@@ -265,7 +265,7 @@ abstract class Client
         // Set the parameters.
         $defaults = [
             'oauth_consumer_key'     => $this->getOption('consumer_key'),
-            'oauth_signature_method' => 'HMAC-SHA1',
+            'oauth_signature_method' => $this->getOption('signature_method', 'HMAC-SHA1'),
             'oauth_version'          => '1.0',
             'oauth_nonce'            => $this->generateNonce(),
             'oauth_timestamp'        => time(),
@@ -346,17 +346,13 @@ abstract class Client
      */
     private function createHeader(array $parameters): string
     {
-        $header = 'OAuth ';
+        $pairs = [];
 
         foreach ($parameters as $key => $value) {
-            if (!strcmp($header, 'OAuth ')) {
-                $header .= $key . '="' . $this->safeEncode($value) . '"';
-            } else {
-                $header .= ', ' . $key . '="' . $value . '"';
-            }
+            $pairs[] = $this->safeEncode($key) . '="' . $this->safeEncode($value) . '"';
         }
 
-        return $header;
+        return 'OAuth ' . implode(', ', $pairs);
     }
 
     /**
@@ -393,10 +389,9 @@ abstract class Client
         // Create the signature base string.
         $base = $this->baseString($url, $method, $parameters);
 
-        $parameters['oauth_signature'] = $this->safeEncode(
-            base64_encode(
-                hash_hmac('sha1', $base, $this->prepareSigningKey(), true)
-            )
+        $parameters['oauth_signature'] = $this->createSignature(
+            $base,
+            $parameters['oauth_signature_method'] ?? 'HMAC-SHA1'
         );
 
         return $parameters;
@@ -494,6 +489,37 @@ abstract class Client
     private function prepareSigningKey(): string
     {
         return $this->safeEncode($this->getOption('consumer_secret')) . '&' . $this->safeEncode(($this->token) ? $this->token['secret'] : '');
+    }
+
+    /**
+     * Creates the signature of a request.
+     *
+     * Supports the HMAC-SHA1, HMAC-SHA256 and PLAINTEXT signature methods. Override this method to support further
+     * methods such as RSA-SHA1. The returned signature is not percent-encoded.
+     *
+     * @param   string  $baseString       The signature base string.
+     * @param   string  $signatureMethod  The signature method, the value of the oauth_signature_method parameter.
+     *
+     * @return  string  The signature.
+     *
+     * @since   __DEPLOY_VERSION__
+     * @throws  \DomainException  If the signature method is not supported.
+     */
+    protected function createSignature(string $baseString, string $signatureMethod): string
+    {
+        switch ($signatureMethod) {
+            case 'HMAC-SHA1':
+                return base64_encode(hash_hmac('sha1', $baseString, $this->prepareSigningKey(), true));
+
+            case 'HMAC-SHA256':
+                return base64_encode(hash_hmac('sha256', $baseString, $this->prepareSigningKey(), true));
+
+            case 'PLAINTEXT':
+                return $this->prepareSigningKey();
+
+            default:
+                throw new \DomainException(sprintf('Unsupported signature method "%s".', $signatureMethod));
+        }
     }
 
     /**

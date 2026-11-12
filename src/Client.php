@@ -29,7 +29,7 @@ abstract class Client
      * @var    array|\ArrayAccess
      * @since  1.0
      */
-    protected $options;
+    protected array|\ArrayAccess $options;
 
     /**
      * Contains access token key, secret and verifier.
@@ -37,7 +37,7 @@ abstract class Client
      * @var    array
      * @since  1.0
      */
-    protected $token = [];
+    protected array $token = [];
 
     /**
      * The HTTP client object to use in sending HTTP requests.
@@ -45,7 +45,7 @@ abstract class Client
      * @var    Http
      * @since  1.0
      */
-    protected $client;
+    protected Http $client;
 
     /**
      * The input object to use in retrieving GET/POST data.
@@ -53,7 +53,7 @@ abstract class Client
      * @var    Input
      * @since  1.0
      */
-    protected $input;
+    protected Input $input;
 
     /**
      * The application object to send HTTP headers for redirects.
@@ -61,7 +61,7 @@ abstract class Client
      * @var    SessionAwareWebApplicationInterface
      * @since  1.0
      */
-    protected $application;
+    protected SessionAwareWebApplicationInterface $application;
 
     /**
      * Selects which version of OAuth to use: 1.0 or 1.0a.
@@ -69,7 +69,7 @@ abstract class Client
      * @var    string
      * @since  1.0
      */
-    protected $version;
+    protected string $version;
 
     /**
      * Constructor.
@@ -86,8 +86,8 @@ abstract class Client
         SessionAwareWebApplicationInterface $application,
         ?Http $client = null,
         ?Input $input = null,
-        $options = [],
-        $version = '1.0a'
+        array|\ArrayAccess $options = [],
+        string $version = '1.0a'
     ) {
         $this->application = $application;
         $this->client      = $client ?: (new HttpFactory())->getHttp($options);
@@ -251,12 +251,12 @@ abstract class Client
      * @param   mixed   $data        The POST request data.
      * @param   array   $headers     An array of name-value pairs to include in the header of the request
      *
-     * @return  \Joomla\Http\Response
+     * @return  Response
      *
      * @since   1.0
      * @throws  \DomainException
      */
-    public function oauthRequest($url, $method, $parameters, $data = [], $headers = [])
+    public function oauthRequest(string $url, string $method, array $parameters, mixed $data = [], array $headers = []): Response
     {
         if (!in_array(strtoupper($method), ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])) {
             throw new \DomainException('Invalid request method!');
@@ -362,14 +362,14 @@ abstract class Client
     /**
      * Method to create the URL formed string with the parameters.
      *
-     * @param   string  $url         The request URL.
-     * @param   array   $parameters  Array containing request parameters.
+     * @param   string        $url         The request URL.
+     * @param   array|string  $parameters  Array containing request parameters, or a query string.
      *
      * @return  string  The formed URL.
      *
      * @since   1.0
      */
-    public function toUrl($url, $parameters)
+    public function toUrl(string $url, array|string $parameters): string
     {
         $uri = new Uri($url);
         $uri->setQuery($parameters);
@@ -516,7 +516,7 @@ abstract class Client
      *
      * @since   1.0
      */
-    public function getOption($key, $default = null)
+    public function getOption(string $key, mixed $default = null): mixed
     {
         return $this->options[$key] ?? $default;
     }
@@ -531,7 +531,7 @@ abstract class Client
      *
      * @since   1.0
      */
-    public function setOption($key, $value)
+    public function setOption(string $key, mixed $value): static
     {
         $this->options[$key] = $value;
 
@@ -545,7 +545,7 @@ abstract class Client
      *
      * @since   1.0
      */
-    public function getToken()
+    public function getToken(): array
     {
         return $this->token;
     }
@@ -559,7 +559,7 @@ abstract class Client
      *
      * @since   1.0
      */
-    public function setToken($token)
+    public function setToken(array $token): static
     {
         $this->token = $token;
 

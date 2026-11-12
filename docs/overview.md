@@ -8,7 +8,7 @@ The Client is abstract, it must be extended and have the two abstract methods im
 * verifyCredentials is used to check if an existing access token is still valid. Servers may have different ways of testing the access token validity, for example Twitter has a specific URL for this. There are several reasons an access token may be invalid: the token expires after some time, the user changes his password which invalidates the access token, the user de-authorizes your app, the user logs out.
 * validateResponse method is used to check the response codes. This method abstract because servers may have different response error bodies.
 
-By default the client will act as an OAuth 1.0a client. If you need an OAuth 1.0 client, than you have to set the constructor $version parameter to '1.0'. The client requires additional options and this can be done by injecting in a Registry object:
+By default the client will act as an OAuth 1.0a client. If you need an OAuth 1.0 client, than you have to set the constructor $version parameter to `Client::VERSION_1_0` ('1.0'); any value other than `Client::VERSION_1_0A` ('1.0a') and `Client::VERSION_1_0` throws an `InvalidArgumentException`. The client requires additional options and this can be done by injecting in a Registry object:
 
 ```php
 use Joomla\Oauth1\Client;

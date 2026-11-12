@@ -24,6 +24,22 @@ use Joomla\Uri\Uri;
 abstract class Client
 {
     /**
+     * OAuth 1.0 protocol version.
+     *
+     * @var    string
+     * @since  __DEPLOY_VERSION__
+     */
+    public const VERSION_1_0 = '1.0';
+
+    /**
+     * OAuth 1.0a protocol version (RFC 5849).
+     *
+     * @var    string
+     * @since  __DEPLOY_VERSION__
+     */
+    public const VERSION_1_0A = '1.0a';
+
+    /**
      * Options for the Client object.
      *
      * @var    array|\ArrayAccess
@@ -78,9 +94,11 @@ abstract class Client
      * @param   ?Http                                $client       The HTTP client object.
      * @param   ?Input                               $input        The input object
      * @param   array|\ArrayAccess                   $options      OAuth1 Client options.
-     * @param   string                               $version      Specify the OAuth version. By default we are using 1.0a.
+     * @param   string                               $version      Specify the OAuth version: self::VERSION_1_0A (default) or
+     *                                                             self::VERSION_1_0.
      *
      * @since   1.0
+     * @throws  \InvalidArgumentException  If the version is not supported.
      */
     public function __construct(
         SessionAwareWebApplicationInterface $application,
@@ -89,6 +107,12 @@ abstract class Client
         $options = [],
         $version = '1.0a'
     ) {
+        if ($version !== self::VERSION_1_0A && $version !== self::VERSION_1_0) {
+            throw new \InvalidArgumentException(
+                sprintf('Unsupported OAuth version "%s", use "%s" or "%s".', $version, self::VERSION_1_0A, self::VERSION_1_0)
+            );
+        }
+
         $this->application = $application;
         $this->client      = $client ?: (new HttpFactory())->getHttp($options);
         $this->input       = $input ?: $application->getInput();

@@ -42,7 +42,7 @@ $oauth->setToken($token);
 $access_token = $oauth->authenticate();
 ```
 
-When calling the authenticate() method, your stored access token will be used only if it's valid, a new one will be created if you don't have an access token or if the stored one is not valid. The method will return a valid access token that's going to be used.
+When calling the authenticate() method, your stored access token will be used only if it's valid, a new one will be created if you don't have an access token or if the stored one is not valid. The method will return a valid access token that's going to be used. Between the redirect to the provider and the callback, the request token is kept in the session under the keys `oauth_token.key` and `oauth_token.secret`; on the callback, the `oauth_token` returned by the provider must match it, otherwise `authenticate()` throws a `DomainException`, and once the access token has been obtained the request token is removed from the session. If several OAuth1 clients share one session, give each its own 'session_namespace' option (default `oauth_token`, e.g. `$options->set('session_namespace', 'oauth_provider_a')`) so that they do not overwrite each other's request token.
 
 Now you can perform authorised requests using the oauthRequest method.
 

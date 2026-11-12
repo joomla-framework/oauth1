@@ -125,16 +125,24 @@ abstract class Client
         }
 
         if (!empty($verifier)) {
-            $session = $this->application->getSession();
+            $session   = $this->application->getSession();
+            $namespace = $this->getOption('session_namespace', 'oauth_token');
 
             // Get token form session.
             $this->token = [
-                'key'    => $session->get('oauth_token.key'),
-                'secret' => $session->get('oauth_token.secret'),
+                'key'    => $session->get($namespace . '.key'),
+                'secret' => $session->get($namespace . '.secret'),
             ];
 
-            // Verify the returned request token.
-            if (strcmp($this->token['key'], $this->input->get('oauth_token')) !== 0) {
+            // Verify the returned request token, which must not be compared in its filtered form.
+            $returnedToken = $this->input->get('oauth_token', '', 'raw');
+
+            if (
+                !\is_string($this->token['key'])
+                || $this->token['key'] === ''
+                || !\is_string($returnedToken)
+                || !hash_equals($this->token['key'], $returnedToken)
+            ) {
                 throw new \DomainException('Bad session!');
             }
 
@@ -145,6 +153,10 @@ abstract class Client
 
             // Generate access token.
             $this->generateAccessToken();
+
+            // The request token has been used up.
+            $session->remove($namespace . '.key');
+            $session->remove($namespace . '.secret');
 
             // Return the access token.
             return $this->token;
@@ -189,9 +201,10 @@ abstract class Client
         $this->token = ['key' => $params['oauth_token'], 'secret' => $params['oauth_token_secret']];
 
         // Save the request token in session
-        $session = $this->application->getSession();
-        $session->set('oauth_token.key', $this->token['key']);
-        $session->set('oauth_token.secret', $this->token['secret']);
+        $session   = $this->application->getSession();
+        $namespace = $this->getOption('session_namespace', 'oauth_token');
+        $session->set($namespace . '.key', $this->token['key']);
+        $session->set($namespace . '.secret', $this->token['secret']);
     }
 
     /**

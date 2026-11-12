@@ -27,6 +27,12 @@ $options->set('requestTokenURL', $requestToken);
 parent::__construct($this->options);
 ```
 
+Requests are signed with HMAC-SHA1 by default. If your provider requires another signature method, set the 'signature_method' option to `HMAC-SHA256` or `PLAINTEXT` (only use `PLAINTEXT` over HTTPS). To support a further method, such as RSA-SHA1, override the protected `createSignature()` method. Every parameter in the `Authorization` header is percent-encoded as required by RFC 5849, section 3.5.1.
+
+```php
+$options->set('signature_method', 'HMAC-SHA256');
+```
+
 By default you have to set and send headers manually in your application, but if you want this to be done automatically by the client you can set Registry option 'sendheaders' to true.
 
 ```php

@@ -258,7 +258,9 @@ abstract class Client
      */
     public function oauthRequest($url, $method, $parameters, $data = [], $headers = [])
     {
-        if (!in_array(strtoupper($method), ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])) {
+        $method = strtoupper($method);
+
+        if (!in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])) {
             throw new \DomainException('Invalid request method!');
         }
 
@@ -309,11 +311,20 @@ abstract class Client
 
                 break;
 
+            case 'PATCH':
+                $headers  = array_merge($headers, ['Authorization' => $this->createHeader($oauthHeaders)]);
+                $response = $this->client->patch($url, $data, $headers);
+
+                break;
+
             case 'DELETE':
                 $headers  = array_merge($headers, ['Authorization' => $this->createHeader($oauthHeaders)]);
                 $response = $this->client->delete($url, $headers);
 
                 break;
+
+            default:
+                throw new \DomainException('Invalid request method!');
         }
 
         // Validate the response code.

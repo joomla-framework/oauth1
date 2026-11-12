@@ -44,7 +44,7 @@ $access_token = $oauth->authenticate();
 
 When calling the authenticate() method, your stored access token will be used only if it's valid, a new one will be created if you don't have an access token or if the stored one is not valid. The method will return a valid access token that's going to be used.
 
-Now you can perform authorised requests using the oauthRequest method.
+Now you can perform authorised requests using the oauthRequest method. It supports the `GET`, `POST`, `PUT`, `PATCH` and `DELETE` request methods; the method name is case-insensitive, any other method throws a `DomainException`.
 
 ### A More Complete Example
 

@@ -4,6 +4,8 @@
 
 The OAuth1 package supports OAuth 1.0 and 1.0a protocol versions. The client facilitates authorised RESTful HTTP requests. You can find the OAuth RFC at [http://tools.ietf.org/html/rfc5849](http://tools.ietf.org/html/rfc5849).
 
+Requests are signed as described in RFC 5849, section 3.4. The signature base string uses the normalised request URL (lower-case scheme and host, no default port, no query string or fragment), and the query parameters of the request URL are signed together with the OAuth parameters and the form data.
+
 The Client is abstract, it must be extended and have the two abstract methods implemented. These methods are verifyCredentials and validateResponse:
 * verifyCredentials is used to check if an existing access token is still valid. Servers may have different ways of testing the access token validity, for example Twitter has a specific URL for this. There are several reasons an access token may be invalid: the token expires after some time, the user changes his password which invalidates the access token, the user de-authorizes your app, the user logs out.
 * validateResponse method is used to check the response codes. This method abstract because servers may have different response error bodies.

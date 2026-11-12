@@ -415,37 +415,84 @@ abstract class Client
      */
     private function baseString(string $url, string $method, array $parameters): string
     {
-        // Sort the parameters alphabetically
-        uksort($parameters, 'strcmp');
-        $kv = [];
+        $pairs = [];
 
-        // Encode parameters.
+        // Encode parameters, one pair per value of an array parameter.
         foreach ($parameters as $key => $value) {
-            $key = $this->safeEncode($key);
-
-            if (\is_array($value)) {
-                foreach ($value as $k => $v) {
-                    $v    = $this->safeEncode($v);
-                    $kv[] = "{$key}={$v}";
-                }
-            } else {
-                $value = $this->safeEncode($value);
-                $kv[]  = "{$key}={$value}";
+            foreach (\is_array($value) ? $value : [$value] as $v) {
+                $pairs[] = [$this->safeEncode($key), $this->safeEncode($v)];
             }
         }
 
+        // The query parameters of the URL are part of the parameter list (RFC 5849, section 3.4.1.3.1).
+        $query = (string) parse_url($url, PHP_URL_QUERY);
+
+        foreach (explode('&', $query) as $pair) {
+            if ($pair === '') {
+                continue;
+            }
+
+            [$key, $value] = array_pad(explode('=', $pair, 2), 2, '');
+            $pairs[]       = [$this->safeEncode(urldecode($key)), $this->safeEncode(urldecode($value))];
+        }
+
+        // Sort the encoded pairs by name, then by value (RFC 5849, section 3.4.1.3.2).
+        usort(
+            $pairs,
+            static function (array $a, array $b): int {
+                return strcmp($a[0], $b[0]) ?: strcmp($a[1], $b[1]);
+            }
+        );
+
         // Form the parameter string.
-        $params = implode('&', $kv);
+        $params = implode(
+            '&',
+            array_map(
+                static function (array $pair): string {
+                    return $pair[0] . '=' . $pair[1];
+                },
+                $pairs
+            )
+        );
 
         // Signature base string elements.
         $base = [
-            $method,
-            $url,
+            strtoupper($method),
+            $this->baseStringUri($url),
             $params,
         ];
 
         // Return the base string.
         return implode('&', $this->safeEncode($base));
+    }
+
+    /**
+     * Prepare the base string URI: lower-case scheme and host, no default port, no query and no fragment
+     * (RFC 5849, section 3.4.1.2).
+     *
+     * @param   string  $url  The request URL.
+     *
+     * @return  string  The base string URI.
+     *
+     * @since   __DEPLOY_VERSION__
+     */
+    private function baseStringUri(string $url): string
+    {
+        $parts = parse_url($url);
+
+        if ($parts === false || !isset($parts['scheme'], $parts['host'])) {
+            // Not an absolute URL; strip the query and fragment only.
+            return preg_replace('/[?#].*$/s', '', $url);
+        }
+
+        $scheme = strtolower($parts['scheme']);
+        $uri    = $scheme . '://' . strtolower($parts['host']);
+
+        if (isset($parts['port']) && !($scheme === 'http' && $parts['port'] === 80) && !($scheme === 'https' && $parts['port'] === 443)) {
+            $uri .= ':' . $parts['port'];
+        }
+
+        return $uri . ($parts['path'] ?? '/');
     }
 
     /**

@@ -48,13 +48,48 @@ Now you can perform authorised requests using the oauthRequest method.
 
 ### A More Complete Example
 
-See the Twitter and LinkedIn packages for examples demonstrating more about the OAuth1 package.
-
-TODO: add links to the Twitter and LinkedIn packages after this packages are merged.
+The Twitter and LinkedIn packages were once planned as the reference consumers of this package, but
+neither was ever merged into the Framework, so there is no worked example to point at. The
+subclass sketch above is the complete picture: implement `verifyCredentials()` and
+`validateResponse()` against your provider's API and drive the rest through `authenticate()` and
+`oauthRequest()`.
 
 ### More Information
 The following resources contain more information:
-* [http://api.joomla.org/](Joomla! API Reference)
-* [http://tools.ietf.org/html/rfc5849](OAuth RFC)
+* [Joomla! API Reference](https://api.joomla.org/)
+* [OAuth 1.0a — RFC 5849](https://tools.ietf.org/html/rfc5849)
 
 
+
+## Things to know before you build on this
+
+**The class is abstract and ships without an implementation.** You must subclass it and implement
+`verifyCredentials()` and `validateResponse()`; there is no ready-made provider in the package.
+
+**Only lower-case-safe HTTP methods work.** `oauthRequest()` validates the method with
+`strtoupper()` but then dispatches on the raw value, so `oauthRequest($url, 'get', …)` passes
+validation, matches no branch and leaves `$response` undefined. Always pass upper-case. `PATCH`
+is accepted by the validation but has no branch at all, so it cannot be used.
+
+**Only the first Authorization parameter is encoded.** `createHeader()` percent-encodes the value
+of the first parameter and inserts every following one raw. Since `oauth_verifier` comes straight
+from the callback query string, a value containing a quote or a newline lands unencoded in the
+`Authorization` header. Validate the verifier before calling `authenticate()` if the provider's
+values can contain anything unusual.
+
+**The signature base string is not normalised.** RFC 5849 requires the URL to be split from its
+query string, with those parameters folded into the signed parameter list. This implementation
+signs the URL as given, so any request to a URL that already carries a query string produces a
+signature the provider cannot reproduce. Pass query parameters through the `$data` argument
+instead of embedding them in the URL.
+
+**HMAC-SHA1 is the only signature method.** There is no RSA-SHA1 and no HMAC-SHA256, and no
+extension point to add one.
+
+**The request token check is not constant time.** `authenticate()` compares the session token to
+the returned `oauth_token` with `strcmp()`, and reads the request value through the default `cmd`
+filter, which strips characters some providers use. If your provider's tokens contain anything
+outside `[A-Za-z0-9_.-]`, read the value with the `raw` filter and compare with `hash_equals()`.
+
+**Access tokens are not persisted.** The request token is written to the session, the access token
+is not. Store it yourself after `authenticate()` returns, or it is gone at the end of the request.

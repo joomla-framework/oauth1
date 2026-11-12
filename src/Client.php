@@ -179,9 +179,9 @@ abstract class Client
         // Make an OAuth request for the Request Token.
         $response = $this->oauthRequest($this->getOption('requestTokenURL'), 'POST', $parameters);
 
-        parse_str((string) $response->getBody(), $params);
+        $params = $this->parseTokenResponse($response, 'request');
 
-        if (strcmp($this->version, '1.0a') === 0 && strcmp($params['oauth_callback_confirmed'], 'true') !== 0) {
+        if (strcmp($this->version, '1.0a') === 0 && ($params['oauth_callback_confirmed'] ?? '') !== 'true') {
             throw new \DomainException('Bad request token!');
         }
 
@@ -236,10 +236,41 @@ abstract class Client
         // Make an OAuth request for the Access Token.
         $response = $this->oauthRequest($this->getOption('accessTokenURL'), 'POST', $parameters);
 
-        parse_str((string) $response->getBody(), $params);
+        $params = $this->parseTokenResponse($response, 'access');
 
         // Save the access token.
         $this->token = ['key' => $params['oauth_token'], 'secret' => $params['oauth_token_secret']];
+    }
+
+    /**
+     * Parses a token response and checks that it contains a token and a token secret.
+     *
+     * @param   Response  $response   The response of the token request.
+     * @param   string    $tokenType  The type of the token, for the error message.
+     *
+     * @return  array  The response parameters.
+     *
+     * @since   __DEPLOY_VERSION__
+     * @throws  \DomainException  If the response contains no token, with the oauth_problem or the response body.
+     */
+    private function parseTokenResponse($response, string $tokenType): array
+    {
+        $body = (string) $response->getBody();
+
+        parse_str($body, $params);
+
+        if (
+            !isset($params['oauth_token'], $params['oauth_token_secret'])
+            || !\is_string($params['oauth_token'])
+            || !\is_string($params['oauth_token_secret'])
+            || $params['oauth_token'] === ''
+        ) {
+            $problem = isset($params['oauth_problem']) && \is_string($params['oauth_problem']) ? $params['oauth_problem'] : substr($body, 0, 500);
+
+            throw new \DomainException(sprintf('The %s token response contains no token: %s', $tokenType, $problem));
+        }
+
+        return $params;
     }
 
     /**

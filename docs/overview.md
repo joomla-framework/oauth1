@@ -42,6 +42,8 @@ $oauth->setToken($token);
 $access_token = $oauth->authenticate();
 ```
 
+If the provider answers the request token or access token request without a token, `authenticate()` throws a `DomainException` whose message contains the provider's `oauth_problem` or the beginning of the response body.
+
 When calling the authenticate() method, your stored access token will be used only if it's valid, a new one will be created if you don't have an access token or if the stored one is not valid. The method will return a valid access token that's going to be used.
 
 Now you can perform authorised requests using the oauthRequest method.

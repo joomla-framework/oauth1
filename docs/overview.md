@@ -33,6 +33,13 @@ By default you have to set and send headers manually in your application, but if
 $options->set('sendheaders', true);
 ```
 
+Without 'sendheaders', send the user to the URL returned by `getAuthorisationUrl()` after `authenticate()` has obtained the request token. It adds the request token and the 'scope' option, percent-encoded, to the query of the 'authoriseURL' option, which may already contain a query string.
+
+```php
+$oauth->authenticate();
+$application->redirect($oauth->getAuthorisationUrl());
+```
+
 Now you can authenticate the user and request him to authorise your application in order to get an access token, but if you already have an access token stored you can set it and if it's still valid your application will use it.
 
 ```php

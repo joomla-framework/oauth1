@@ -203,16 +203,32 @@ abstract class Client
      */
     private function authorise()
     {
-        $url = $this->getOption('authoriseURL') . '?oauth_token=' . $this->token['key'];
+        if ($this->getOption('sendheaders')) {
+            $this->application->redirect($this->getAuthorisationUrl());
+        }
+    }
+
+    /**
+     * Get the URL the user has to visit to authorise the request token.
+     *
+     * The request token and the 'scope' option are added, percent-encoded, to the query of the 'authoriseURL' option.
+     * Use it after authenticate() has obtained a request token if the 'sendheaders' option is not set.
+     *
+     * @return  string  The authorisation URL.
+     *
+     * @since   __DEPLOY_VERSION__
+     */
+    public function getAuthorisationUrl(): string
+    {
+        $parameters = ['oauth_token' => $this->token['key'] ?? ''];
 
         if ($this->getOption('scope')) {
-            $scope = \is_array($this->getOption('scope')) ? implode(' ', $this->getOption('scope')) : $this->getOption('scope');
-            $url .= '&scope=' . urlencode($scope);
+            $parameters['scope'] = \is_array($this->getOption('scope')) ? implode(' ', $this->getOption('scope')) : $this->getOption('scope');
         }
 
-        if ($this->getOption('sendheaders')) {
-            $this->application->redirect($url);
-        }
+        $url = (string) $this->getOption('authoriseURL');
+
+        return $url . (strpos($url, '?') === false ? '?' : '&') . http_build_query($parameters, '', '&', PHP_QUERY_RFC3986);
     }
 
     /**

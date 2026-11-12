@@ -14,7 +14,6 @@ use Joomla\Http\Http;
 use Joomla\Http\HttpFactory;
 use Joomla\Http\Response;
 use Joomla\Input\Input;
-use Joomla\Uri\Uri;
 
 /**
  * Joomla Framework class for interacting with an OAuth 1.0 and 1.0a server.
@@ -362,8 +361,10 @@ abstract class Client
     /**
      * Method to create the URL formed string with the parameters.
      *
-     * @param   string  $url         The request URL.
-     * @param   array   $parameters  Array containing request parameters.
+     * The parameters are percent-encoded (RFC 3986) and added to the existing query of the URL.
+     *
+     * @param   string        $url         The request URL.
+     * @param   array|string  $parameters  Array containing request parameters, or an encoded query string.
      *
      * @return  string  The formed URL.
      *
@@ -371,10 +372,29 @@ abstract class Client
      */
     public function toUrl($url, $parameters)
     {
-        $uri = new Uri($url);
-        $uri->setQuery($parameters);
+        // A string is taken as an already encoded query.
+        $query = \is_array($parameters) ? http_build_query($parameters, '', '&', PHP_QUERY_RFC3986) : (string) $parameters;
 
-        return (string) $uri;
+        if ($query === '') {
+            return $url;
+        }
+
+        // Keep the fragment at the end of the URL.
+        $fragment = '';
+        $position = strpos($url, '#');
+
+        if ($position !== false) {
+            $fragment = substr($url, $position);
+            $url      = substr($url, 0, $position);
+        }
+
+        if (strpos($url, '?') === false) {
+            $url .= '?';
+        } elseif (!str_ends_with($url, '?') && !str_ends_with($url, '&')) {
+            $url .= '&';
+        }
+
+        return $url . $query . $fragment;
     }
 
     /**

@@ -46,6 +46,8 @@ When calling the authenticate() method, your stored access token will be used on
 
 Now you can perform authorised requests using the oauthRequest method.
 
+For `GET` requests the `$data` array is percent-encoded (RFC 3986) and appended to the query string of the URL; a query string already present in the URL is kept. The public `toUrl()` method does the same.
+
 ### A More Complete Example
 
 See the Twitter and LinkedIn packages for examples demonstrating more about the OAuth1 package.

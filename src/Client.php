@@ -464,11 +464,7 @@ abstract class Client
             return array_map([$this, 'safeEncode'], $data);
         }
 
-        return str_ireplace(
-            ['+', '%7E'],
-            [' ', '~'],
-            rawurlencode((string) $data)
-        );
+        return rawurlencode((string) $data);
     }
 
     /**
@@ -480,8 +476,7 @@ abstract class Client
      */
     public static function generateNonce()
     {
-        // The md5s look nicer than numbers.
-        return md5(microtime() . random_bytes(16));
+        return bin2hex(random_bytes(16));
     }
 
     /**
